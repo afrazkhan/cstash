@@ -1,0 +1,4 @@
+cstash.egg-info
+.vscode
+config.py
+__pycache__
