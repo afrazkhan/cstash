@@ -7,6 +7,7 @@ helpers.set_logger()
 @click.command()
 @click.pass_context
 @click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
-def encrypt(ctx, cryptographer=None):
+@click.argument('filename')
+def encrypt(ctx, cryptographer, filename):
     from cstash.crypto import crypto
-    crypto.Encryption(ctx.obj.get('cstash_directory'), cryptographer)
+    crypto.Encryption(ctx.obj.get('cstash_directory'), cryptographer, ctx.obj.get('log_level')).encrypt(filename)

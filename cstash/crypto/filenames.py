@@ -3,24 +3,36 @@
 from sqlitedict import SqliteDict
 import secrets
 from pathlib import Path
+import logging
 
 class Filenames():
     """
     Creates and manages filename obsfucation database
     """
 
-    def __init__(self, cstash_directory):
+    def __init__(self, cstash_directory, log_level):
         """ Create the cstash SQLite DB """
 
-        self.filenames_db = SqliteDict(cstash_directory + '/filenames.sqlite', autocommit=True, flag='c')
+        logging.getLogger().setLevel(log_level)
+        self.db = "{}/filenames.sqlite".format(cstash_directory)
 
-    def search(self, obj):
-        if obj in self.filenames_db:
-            return self.filenames_db[obj]
+    def connect_to_db(self, db=None):
+        db = db or self.db
+
+        return SqliteDict(db, autocommit=True, flag='c')
+
+    def search(self, obj, db=None):
+        db = db or self.db
+        db_connection = self.connect_to_db()
+
+        if obj in db_connection:
+            return db_connection[obj]
+
+        db_connection.close()
 
         return False
 
-    def store(self, obj):
+    def store(self, obj, db=None):
         """
         If the filenames DB already has an entry for the object, return that, otherwise,
         create a new entry for the object and return that
@@ -29,10 +41,17 @@ class Filenames():
         existing_entry = self.search(obj)
 
         if existing_entry:
+            logging.debug("Found existing entry for {} in DB".format(obj))
             return existing_entry
         else:
+            logging.debug("No existing DB entry for {}, adding it".format(obj))
+
+            db = db or self.db
+            db_connection = self.connect_to_db()
+
             new_entry = secrets.token_urlsafe(nbytes=42)
-            self.filenames_db[obj] = new_entry
+            db_connection[obj] = new_entry
+            db_connection.close()
 
             return new_entry
 
