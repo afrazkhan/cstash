@@ -17,14 +17,15 @@ setuptools.setup(
         "click",
         "boto3",
         'datetime',
-        'click'
+        'click',
+        'sqlitedict'
         ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
-    entry_points={"console_scripts": ["cstash=cstash.main:main"]},
+    entry_points={"console_scripts": ["cstash=cstash.main:entry_point"]},
     scripts=[],
     zip_safe=False
 )
