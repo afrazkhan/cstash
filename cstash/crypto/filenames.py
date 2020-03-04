@@ -22,6 +22,8 @@ class Filenames():
         return SqliteDict(db, autocommit=True, flag='c')
 
     def search(self, obj, db=None):
+        """ Return key for [obj] in [db] if it exists, or False if not """
+
         db = db or self.db
         db_connection = self.connect_to_db()
 
@@ -34,26 +36,27 @@ class Filenames():
 
     def store(self, obj, db=None):
         """
-        If the filenames DB already has an entry for the object, return that, otherwise,
-        create a new entry for the object and return that
+        Create or overwrite an entry in the filenames [db] for [obj]. Return a dict of
+        [entry] denoting the obsfucated filename, and [db_connect] to be used later for
+        closing the connection
         """
 
-        existing_entry = self.search(obj)
+        db = db or self.db
+        db_connection = self.connect_to_db(db)
 
-        if existing_entry:
-            logging.debug("Found existing entry for {} in DB".format(obj))
-            return existing_entry
-        else:
-            logging.debug("No existing DB entry for {}, adding it".format(obj))
+        new_entry = secrets.token_urlsafe(nbytes=42)
+        db_connection[obj] = new_entry
+        logging.debug(db_connection[obj])
 
-            db = db or self.db
-            db_connection = self.connect_to_db()
+        return { 'entry': new_entry, 'db_connection': db_connection }
 
-            new_entry = secrets.token_urlsafe(nbytes=42)
-            db_connection[obj] = new_entry
-            db_connection.close()
+    def close_db_connection(self, db_connection):
+        """
+        Close the connection to [db_connection]. Used with store() so that we don't
+        create entries that failed to upload
+        """
 
-            return new_entry
+        db_connection.close()
 
     def restore(self):
         """

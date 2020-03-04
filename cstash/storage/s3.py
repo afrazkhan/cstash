@@ -41,3 +41,8 @@ class S3():
         all_objects = [ k['Key'] for k in [ obj for obj in all_objects['Contents'] ]]
 
         return all_objects
+
+    def upload(self, bucket, obj, s3_client=None):
+        """ TODO: Upload [obj] to [bucket]. Return True for success, False for failure """
+
+        return False

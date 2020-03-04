@@ -3,12 +3,16 @@ Calls the appropriate module to do storage tasks. At the moment there's only the
 choose from
 """
 
-class Search():
-    def __init__(self):
-        pass
-
-    def search(self, bucket, filename, storage_provider):
+class Storage():
+    def __init__(self, storage_provider):
         if storage_provider == 's3':
             from cstash.storage.s3 import S3
-            s3 = S3()
-            return s3.search(bucket=None, filename=None)
+            self.storage_provider = S3()
+
+    def search(self, bucket, filename, storage_provider=None):
+        storage_provider = storage_provider or self.storage_provider
+        return self.storage_provider.search(bucket, filename)
+
+    def upload(self, bucket, filename, storage_provider=None):
+        storage_provider = storage_provider or self.storage_provider
+        return self.storage_provider.upload(bucket, filename)

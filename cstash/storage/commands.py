@@ -12,5 +12,5 @@ helpers.set_logger()
 def search(ctx, bucket=None, filename=None, storage_provider=None):
     from cstash.storage import storage
 
-    storage = storage.Search()
+    storage = storage.Storage(storage_provider)
     print(storage.search(bucket=bucket, filename=filename, storage_provider=storage_provider))

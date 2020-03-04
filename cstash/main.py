@@ -35,4 +35,4 @@ from cstash.crypto.commands import encrypt as encrypt_command
 main.add_command(encrypt_command)
 
 if __name__ == "__main__":
-    main()
+    entry_point()

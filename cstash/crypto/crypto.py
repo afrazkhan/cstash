@@ -2,20 +2,28 @@
 Calls the appropriate module to do encryption. At the moment it only does GnuPG
 """
 
+import logging
+import cstash.libs.exceptions as cstash_exceptions
+
 class Encryption():
-    def __init__(self, cstash_directory, cryptographer, log_level):
+    def __init__(self, cstash_directory, cryptographer, key, log_level):
         if cryptographer is 'gpg':
+            logging.getLogger().setLevel(log_level)
             self.log_level = log_level
+
             from cstash.crypto.gpg import GPG
-            self.encryptor = GPG(log_level)
+            self.encryptor = GPG(cstash_directory, key, log_level)
 
         self.cstash_directory = cstash_directory
 
-    def store_filename(self, filename):
-        from cstash.crypto.filenames import Filenames
-        Filenames(self.cstash_directory, self.log_level).store(filename)
+    def encrypt(self, filename, cstash_directory=None):
+        """
+        Encrypt [filename] into the [cstash_directory]. Return the complete path for the
+        encrypted file for success, or raise a CstashCriticalException
+        """
 
-    def encrypt(self, filename):
-        self.store_filename(filename)
-
-        self.encryptor.encrypt(filename)
+        encrypted_filename = self.encryptor.encrypt(filename)
+        if encrypted_filename != False:
+            return encrypted_filename
+        else:
+            raise cstash_exceptions.CstashCriticalException()

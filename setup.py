@@ -18,7 +18,8 @@ setuptools.setup(
         "boto3",
         'datetime',
         'click',
-        'sqlitedict'
+        'sqlitedict',
+        'python-gnupg'
         ],
     classifiers=[
         "Programming Language :: Python :: 3",
