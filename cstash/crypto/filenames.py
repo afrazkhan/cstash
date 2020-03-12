@@ -36,9 +36,10 @@ class Filenames():
 
     def store(self, obj, db=None):
         """
-        Create or overwrite an entry in the filenames [db] for [obj]. Return a dict of
-        [entry] denoting the obsfucated filename, and [db_connect] to be used later for
-        closing the connection
+        Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
+
+        Return a dict of [entry] denoting the obsfucated filename, and [db_connect] to be
+        used later for closing the connection
         """
 
         db = db or self.db

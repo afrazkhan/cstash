@@ -13,15 +13,15 @@ class GPG():
         self.key = key
         self.gpg = gnupg.GPG(gnupghome="{}/.gnupg".format(os.path.expanduser('~')))
 
-    def encrypt(self, filename):
+    def encrypt(self, filepath, obsfucated_name):
         """
-        TODO: Encrypt [filename] to temporary storage in the Cstash directory, and return
+        TODO: Encrypt [filepath] to temporary storage in the Cstash directory, and return
         the path to the encrypted object, or False for failure
         """
 
-        stream = open(filename, "rb")
-        helpers.recreate_directories(self.cstash_directory, filename)
-        encrypted_filepath = "{}/{}".format(self.cstash_directory, filename)
+        stream = open(filepath, "rb")
+        helpers.recreate_directories(self.cstash_directory, filepath)
+        encrypted_filepath = "{}/{}/{}".format(self.cstash_directory, os.path.dirname(filepath), obsfucated_name)
         self.gpg.encrypt_file(stream, self.key, armor=False, output=encrypted_filepath)
 
         return encrypted_filepath

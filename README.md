@@ -1,27 +1,22 @@
-Use S3 for storing encrypted objects, without trusting keys to AWS.
+**NOTE: DO NOT USE, THIS IS A WORK IN PROGRESSS**
 
-## Usage
+A zero-knowledge file syncing solution.
 
-    # Find 'filename'
-    cstash search 'filename'
-    
-    # Retrieve and decrypt 'filename'
-    cstash get 'full/path/to/filename'
+## Rationale
 
-    # Encrypt and store 'filename'
-    cstash put 'full/path/to/filename'
+When using [server side encryption](https://docs.aws.amazon.com/AmazonS3/latest/dev/ServerSideEncryptionCustomerKeys.html) with AWS S3, keys are sent as part of the upload call. The documentation states that Amazon "_removes the encryption key from memory_" after use. It also states that "_Server-side encryption encrypts only the object data, not object metadata_".
 
-## Design
+This leaves data in S3 vulnerable to both malicious intent, and potential incompitance.
 
-* SQLite for key value mapping of hashed filenames to real filenames
-* GPG for encryption / decryption before and after files are sent to S3
+Cstash encrypts files using local keys before uploading them to cloud storage. Filenames are also obsfucated using `secrets.token_urlsafe`, with a local database holding a map to the real filename (recovery is possible from an encrypted version stored along with the objects).
 
-## Functionality
+## Features
 
-### Send and Receive Objects
+* Local encryption / decryption — keys never leave your machine
+* Filenames are obsfucated too, with only the local DB and an encrypted copy in remote storage as a means of finding out which object is which file
+* Able to keep arbitrary files on your machine in sync with remote storage
+* Multiple encryption options and cloud providers supported
 
-For sending:
+## Instalation
 
-1. Take filename as argument to send, and lookup key in local DB
-
-### Browse and Search Bucket
+Don't, it isn't ready yet.

@@ -16,13 +16,15 @@ class Encryption():
 
         self.cstash_directory = cstash_directory
 
-    def encrypt(self, filename, cstash_directory=None):
+    def encrypt(self, filepath, obsfucated_name, cstash_directory=None):
         """
-        Encrypt [filename] into the [cstash_directory]. Return the complete path for the
-        encrypted file for success, or raise a CstashCriticalException
+        Encrypt [filepath] into the [cstash_directory].
+
+        Return the complete path for the encrypted file for success, or raise a
+        CstashCriticalException
         """
 
-        encrypted_filename = self.encryptor.encrypt(filename)
+        encrypted_filename = self.encryptor.encrypt(filepath, obsfucated_name)
         if encrypted_filename != False:
             return encrypted_filename
         else:

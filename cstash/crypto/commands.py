@@ -14,7 +14,7 @@ helpers.set_logger()
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
 @click.argument('filename')
 @click.argument('bucket')
-def encrypt(ctx, cryptographer, storage_provider, key, filename, bucket):
+def encrypt(ctx, cryptographer, storage_provider, key, filepath, bucket):
     from cstash.crypto import crypto
     encryption = crypto.Encryption(
         ctx.obj.get('cstash_directory'),
@@ -22,25 +22,25 @@ def encrypt(ctx, cryptographer, storage_provider, key, filename, bucket):
         key,
         ctx.obj.get('log_level'))
 
-    paths = helpers.get_paths(filename)
+    paths = helpers.get_paths(filepath)
 
     from cstash.crypto.filenames import Filenames
     from cstash.storage.storage import Storage
 
     for f in paths:
         try:
-            encrypted_file_path = encryption.encrypt(f)
-            logging.debug('Encrypted {} to {}'.format(filename, f))
-
             filename_db = Filenames(ctx.obj.get('cstash_directory'), ctx.obj.get('log_level'))
-            db_connection = filename_db.store(filename)
-            logging.debug('Updated the local database with the name of the obsfucated filename mapping')
+            filename_db_mapping = filename_db.store(filepath)
+            logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
+
+            encrypted_file_path = encryption.encrypt(filepath=f, obsfucated_name=filename_db_mapping['entry'])
+            logging.debug('Encrypted {} to {}'.format(filepath, f))
 
             Storage(storage_provider).upload(bucket, encrypted_file_path)
-            logging.debug('Uploaded {} to {}'.format(filename, storage_provider))
+            logging.debug('Uploaded {} to {}'.format(filepath, storage_provider))
 
             logging.debug('Everything went fine, closing the DB connection')
-            filename_db.close_db_connection(db_connection['db_connection'])
+            filename_db.close_db_connection(filename_db_mapping['db_connection'])
         except Exception as e:
             logging.error('Something went wrong: {}, rolling back the last entry from the DB'.format(e))
             # TODO: Do what the error message says
