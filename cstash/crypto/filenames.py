@@ -3,6 +3,7 @@
 from sqlitedict import SqliteDict
 import secrets
 from pathlib import Path
+import cstash.libs.helpers as helpers
 import logging
 
 class Filenames():
@@ -10,22 +11,22 @@ class Filenames():
     Creates and manages filename obsfucation database
     """
 
-    def __init__(self, cstash_directory, log_level):
+    def __init__(self, cstash_directory, log_level=None):
         """ Create the cstash SQLite DB """
 
-        logging.getLogger().setLevel(log_level)
+        helpers.set_logger(level=log_level)
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
-    def connect_to_db(self, db=None):
+    def connect_to_db(self, db=None, autocommit=False):
         db = db or self.db
 
-        return SqliteDict(db, autocommit=True, flag='c')
+        return SqliteDict(db, autocommit=autocommit, flag='c')
 
     def search(self, obj, db=None):
         """ Return key for [obj] in [db] if it exists, or False if not """
 
         db = db or self.db
-        db_connection = self.connect_to_db()
+        db_connection = self.connect_to_db(autocommit=True)
 
         if obj in db_connection:
             return db_connection[obj]

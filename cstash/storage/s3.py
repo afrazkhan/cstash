@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import boto3
+import cstash.libs.helpers as helpers
 
 class S3():
 
-    def __init__(self):
+    def __init__(self, log_level=None):
         self.s3_client = boto3.client('s3')
+        helpers.set_logger(log_level)
 
     def search(self, bucket=None, filename=None, s3_client=None):
         """
@@ -44,5 +46,7 @@ class S3():
 
     def upload(self, bucket, obj, s3_client=None):
         """ TODO: Upload [obj] to [bucket]. Return True for success, False for failure """
+
+
 
         return False

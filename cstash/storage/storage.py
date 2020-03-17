@@ -4,10 +4,10 @@ choose from
 """
 
 class Storage():
-    def __init__(self, storage_provider):
+    def __init__(self, storage_provider, log_level):
         if storage_provider == 's3':
             from cstash.storage.s3 import S3
-            self.storage_provider = S3()
+            self.storage_provider = S3(log_level)
 
     def search(self, bucket, filename, storage_provider=None):
         storage_provider = storage_provider or self.storage_provider

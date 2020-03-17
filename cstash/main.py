@@ -23,7 +23,7 @@ def create_cstash_directory():
     return cstash_dir
 
 @click.group()
-@click.option("--log-level", '-l', default="INFO", type=click.Choice(["INFO", "ERROR", "DEBUG"]), help="How much information to show in logging. Default is INFO")
+@click.option("--log-level", '-l', default="ERROR", type=click.Choice(["INFO", "ERROR", "DEBUG"]), help="How much information to show in logging. Default is ERROR")
 @click.pass_context
 def main(ctx=None, log_level=None, cstash_directory=create_cstash_directory()):
     ctx.obj = {'log_level': log_level, 'cstash_directory': cstash_directory}

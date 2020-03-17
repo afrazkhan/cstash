@@ -2,8 +2,6 @@ import click
 from cstash.libs import helpers
 import logging
 
-helpers.set_logger()
-
 # TODO: Declick the function below for re-use
 # https://github.com/pallets/click/issues/40
 
@@ -15,12 +13,13 @@ helpers.set_logger()
 @click.argument('filename')
 @click.argument('bucket')
 def encrypt(ctx, cryptographer, storage_provider, key, filepath, bucket):
+    log_level = ctx.obj.get('log_level')
     from cstash.crypto import crypto
     encryption = crypto.Encryption(
         ctx.obj.get('cstash_directory'),
         cryptographer,
         key,
-        ctx.obj.get('log_level'))
+        log_level)
 
     paths = helpers.get_paths(filepath)
 
@@ -29,18 +28,19 @@ def encrypt(ctx, cryptographer, storage_provider, key, filepath, bucket):
 
     for f in paths:
         try:
-            filename_db = Filenames(ctx.obj.get('cstash_directory'), ctx.obj.get('log_level'))
+            filename_db = Filenames(ctx.obj.get('cstash_directory'), log_level)
             filename_db_mapping = filename_db.store(filepath)
             logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 
             encrypted_file_path = encryption.encrypt(filepath=f, obsfucated_name=filename_db_mapping['entry'])
             logging.debug('Encrypted {} to {}'.format(filepath, f))
 
-            Storage(storage_provider).upload(bucket, encrypted_file_path)
+            Storage(storage_provider, log_level=log_level).upload(bucket, encrypted_file_path)
             logging.debug('Uploaded {} to {}'.format(filepath, storage_provider))
 
             logging.debug('Everything went fine, closing the DB connection')
             filename_db.close_db_connection(filename_db_mapping['db_connection'])
         except Exception as e:
             logging.error('Something went wrong: {}, rolling back the last entry from the DB'.format(e))
-            # TODO: Do what the error message says
+            # TODO: Check that a rollback isn't necessary, given that we don't commit a transaction
+            #       unless we get a successful upload

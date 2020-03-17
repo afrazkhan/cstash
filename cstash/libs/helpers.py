@@ -13,7 +13,7 @@ def seconds_from_hours(hours):
 def log(message):
   print(message)
 
-def set_logger(level='INFO'):
+def set_logger(level='ERROR'):
     return logging.basicConfig(level=level, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S%z')
 
 def get_paths(file):

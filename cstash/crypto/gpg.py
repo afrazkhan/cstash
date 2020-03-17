@@ -7,8 +7,8 @@ import gnupg
 import os
 
 class GPG():
-    def __init__(self, cstash_directory, key, log_level):
-        logging.getLogger().setLevel(log_level)
+    def __init__(self, cstash_directory, key, log_level=None):
+        helpers.set_logger(level=log_level)
         self.cstash_directory = cstash_directory
         self.key = key
         self.gpg = gnupg.GPG(gnupghome="{}/.gnupg".format(os.path.expanduser('~')))
