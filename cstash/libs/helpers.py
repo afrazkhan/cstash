@@ -43,3 +43,8 @@ def recreate_directories(recreate_in, filepath):
     except Exception as e:
         logging.error(e)
         return False
+
+def strip_path(path):
+    """ Strip the path from a filepath, and return just the filename """
+
+    return os.path.basename(path)

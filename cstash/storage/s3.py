@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import boto3
+import logging
 import cstash.libs.helpers as helpers
 
 class S3():
@@ -34,7 +35,19 @@ class S3():
 
         s3_client = s3_client or self.s3_client
 
-        return ([ b['Name'] for b in s3_client.list_buckets()['Buckets'] ])
+        return ([ bucket['Name'] for bucket in s3_client.list_buckets()['Buckets'] ])
+
+    def bucket_exists(self, bucket, s3_client=None):
+        """ Return True if [bucket] exists, False if it doesn't """
+
+        s3_client = s3_client or self.s3_client
+
+        try:
+            s3_client.list_objects(Bucket=bucket, MaxKeys=1)
+            return True
+        except Exception as e:
+            logging.error("Couldn't find bucket. Check access rights and whether the bucket actually exists: {}".format(e))
+            return False
 
     def get_objects(self, bucket, s3_client=None):
         """ Take [bucket] and [s3_client], and return a list of all objects from [bucket] """
@@ -47,6 +60,16 @@ class S3():
     def upload(self, bucket, obj, s3_client=None):
         """ TODO: Upload [obj] to [bucket]. Return True for success, False for failure """
 
+        s3_client = s3_client or self.s3_client
+        transfer_config = boto3.s3.transfer.TransferConfig(multipart_threshold=1024, use_threads=True, max_concurrency=10)
+        s3_transfer = boto3.s3.transfer.S3Transfer(client=s3_client, config=transfer_config)
 
+        try:
+            logging.debug("Uploading {} to {}".format(obj, bucket))
+            s3_transfer.upload_file(obj, bucket, helpers.strip_path(obj))
 
-        return False
+            return True
+
+        except Exception as e:
+            logging.error("Error uploading: {}".format(e))
+            return False

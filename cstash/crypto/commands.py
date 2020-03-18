@@ -10,9 +10,9 @@ import logging
 @click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.argument('filename')
+@click.argument('filepath', metavar='filename')
 @click.argument('bucket')
-def encrypt(ctx, cryptographer, storage_provider, key, filepath, bucket):
+def stash(ctx, cryptographer, storage_provider, key, filepath, bucket):
     log_level = ctx.obj.get('log_level')
     from cstash.crypto import crypto
     encryption = crypto.Encryption(

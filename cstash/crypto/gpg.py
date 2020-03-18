@@ -1,6 +1,3 @@
-# https://pythonhosted.org/python-gnupg/#decryption
-# https://stackoverflow.com/questions/50532695/embed-filename-using-python-gnupg
-
 import cstash.libs.helpers as helpers
 import logging
 import gnupg
@@ -20,8 +17,9 @@ class GPG():
         """
 
         stream = open(filepath, "rb")
+        import pdb; pdb.set_trace()
         helpers.recreate_directories(self.cstash_directory, filepath)
-        encrypted_filepath = "{}/{}/{}".format(self.cstash_directory, os.path.dirname(filepath), obsfucated_name)
+        encrypted_filepath = "{}/{}".format(self.cstash_directory, obsfucated_name)
         self.gpg.encrypt_file(stream, self.key, armor=False, output=encrypted_filepath)
 
         return encrypted_filepath

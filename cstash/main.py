@@ -31,8 +31,8 @@ def main(ctx=None, log_level=None, cstash_directory=create_cstash_directory()):
 from cstash.storage.commands import search as search_command
 main.add_command(search_command)
 
-from cstash.crypto.commands import encrypt as encrypt_command
-main.add_command(encrypt_command)
+from cstash.crypto.commands import stash as stash_command
+main.add_command(stash_command)
 
 if __name__ == "__main__":
     entry_point()
