@@ -2,7 +2,7 @@ import click
 from cstash.libs import helpers
 import logging
 
-# TODO: Declick the function below for re-use
+# TODO: Declick the functions below for re-use
 # https://github.com/pallets/click/issues/40
 
 @click.command()
@@ -40,7 +40,6 @@ def stash(ctx, cryptographer, storage_provider, key, filepath, bucket):
 
             logging.debug('Everything went fine, closing the DB connection')
             filename_db.close_db_connection(filename_db_mapping['db_connection'])
+            # TODO: encryption.delete_temporary_file(obsfucated_name)
         except Exception as e:
-            logging.error('Something went wrong: {}, rolling back the last entry from the DB'.format(e))
-            # TODO: Check that a rollback isn't necessary, given that we don't commit a transaction
-            #       unless we get a successful upload
+            logging.error('Something went wrong: {}'.format(e))

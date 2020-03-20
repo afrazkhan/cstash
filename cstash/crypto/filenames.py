@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from sqlitedict import SqliteDict
 import secrets
@@ -17,23 +18,15 @@ class Filenames():
         helpers.set_logger(level=log_level)
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
-    def connect_to_db(self, db=None, autocommit=False):
-        db = db or self.db
-
-        return SqliteDict(db, autocommit=autocommit, flag='c')
-
     def search(self, obj, db=None):
-        """ Return key for [obj] in [db] if it exists, or False if not """
+        """ Search the database for partial matches of [obj], and return a list of matches """
 
         db = db or self.db
-        db_connection = self.connect_to_db(autocommit=True)
-
-        if obj in db_connection:
-            return db_connection[obj]
-
+        db_connection = SqliteDict(db, autocommit=True, flag='r')
+        keys = [k for k in db_connection.keys() if obj in k]
         db_connection.close()
 
-        return False
+        return keys
 
     def store(self, obj, db=None):
         """
@@ -44,11 +37,11 @@ class Filenames():
         """
 
         db = db or self.db
-        db_connection = self.connect_to_db(db)
+        db_connection = SqliteDict(db, autocommit=False, flag='c')
 
         new_entry = secrets.token_urlsafe(nbytes=42)
         db_connection[obj] = new_entry
-        logging.debug(db_connection[obj])
+        logging.debug("Wrote {} to database".format(db_connection[obj]))
 
         return { 'entry': new_entry, 'db_connection': db_connection }
 
@@ -58,6 +51,7 @@ class Filenames():
         create entries that failed to upload
         """
 
+        db_connection.commit()
         db_connection.close()
 
     def restore(self):
