@@ -29,14 +29,14 @@ def stash(ctx, cryptographer, storage_provider, key, filepath, bucket):
     for f in paths:
         try:
             filename_db = Filenames(ctx.obj.get('cstash_directory'), log_level)
-            filename_db_mapping = filename_db.store(filepath)
+            filename_db_mapping = filename_db.store(f, cryptographer)
             logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 
             encrypted_file_path = encryption.encrypt(filepath=f, obsfucated_name=filename_db_mapping['entry'])
-            logging.debug('Encrypted {} to {}'.format(filepath, f))
+            logging.debug('Encrypted {} to {}'.format(f, filename_db_mapping['entry']))
 
             Storage(storage_provider, log_level=log_level).upload(bucket, encrypted_file_path)
-            logging.debug('Uploaded {} to {}'.format(filepath, storage_provider))
+            logging.debug('Uploaded {} to {}'.format(filename_db_mapping['entry'], storage_provider))
 
             logging.debug('Everything went fine, closing the DB connection')
             filename_db.close_db_connection(filename_db_mapping['db_connection'])

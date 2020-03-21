@@ -19,16 +19,20 @@ class Filenames():
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
     def search(self, obj, db=None):
-        """ Search the database for partial matches of [obj], and return a list of matches """
+        """
+        Search the database for partial matches of [obj], and return a list of matches
+        in the tuple form: ("obj", {"obsfucated name", "cryptographer"})
+        """
 
         db = db or self.db
         db_connection = SqliteDict(db, autocommit=True, flag='r')
-        keys = [k for k in db_connection.keys() if obj in k]
+        keys = [(k, db_connection[k]) for k in db_connection.keys() if obj in k]
+
         db_connection.close()
 
         return keys
 
-    def store(self, obj, db=None):
+    def store(self, obj, cryptographer, db=None):
         """
         Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
 
@@ -40,7 +44,7 @@ class Filenames():
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
         new_entry = secrets.token_urlsafe(nbytes=42)
-        db_connection[obj] = new_entry
+        db_connection[obj] = { "obsfucated_name": new_entry, "cryptographer": cryptographer }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 
         return { 'entry': new_entry, 'db_connection': db_connection }
