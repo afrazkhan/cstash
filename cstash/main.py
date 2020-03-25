@@ -34,5 +34,8 @@ main.add_command(search_command)
 from cstash.crypto.commands import stash as stash_command
 main.add_command(stash_command)
 
+from cstash.crypto.commands import fetch as fetch_command
+main.add_command(fetch_command)
+
 if __name__ == "__main__":
     entry_point()

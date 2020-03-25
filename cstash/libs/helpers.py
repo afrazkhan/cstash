@@ -45,6 +45,9 @@ def recreate_directories(recreate_in, filepath):
         return False
 
 def strip_path(path):
-    """ Strip the path from a filepath, and return just the filename """
+    """
+    Strip the path from a filepath, and return a tuple with the path as the first
+    element, and just the filename as the second
+    """
 
-    return os.path.basename(path)
+    return os.path.split(path)

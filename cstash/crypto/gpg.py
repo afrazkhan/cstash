@@ -5,27 +5,35 @@ import os
 import cstash.libs.exceptions as exceptions
 
 class GPG():
-    def __init__(self, cstash_directory, key, log_level=None):
+    def __init__(self, cstash_directory, log_level=None):
         helpers.set_logger(level=log_level)
         self.cstash_directory = cstash_directory
-        self.key = key
         self.gpg = gnupg.GPG(gnupghome="{}/.gnupg".format(os.path.expanduser('~')))
 
-    def encrypt(self, filepath, obsfucated_name=None, destination=None):
+    def encrypt(self, source_filepath, key, destination_filepath):
         """
-        Encrypt [filepath] to temporary storage in the Cstash directory, and return
-        the path to the encrypted object, or False for failure. Alternatively, override
-        the usual output destination and filename with [destination].
+        Encrypt [source_filepath] to [destination_filepath].
 
-        One of either [obsfucated_name] or [destination] are required
+        Return [encrypted_filepath] for success or False for failure.
         """
 
-        if not obsfucated_name and not destination:
-            raise exceptions.CstashCriticalException(message="One of either obsfucated_name or destination are needed")
+        try:
+            stream = open(source_filepath, "rb")
+            self.gpg.encrypt_file(stream, key, armor=False, output=destination_filepath)
+        except Exception as e:
+            logging.error("Couldn't encrypt {}: {}".format(source_filepath, e))
+            return False
+
+        return destination_filepath
+
+    def decrypt(self, filepath, destination):
+        """
+        Decrypt [filepath] to [destination]
+        """
 
         stream = open(filepath, "rb")
-        helpers.recreate_directories(self.cstash_directory, filepath)
-        encrypted_filepath = destination or f"{self.cstash_directory}/{obsfucated_name}"
-        self.gpg.encrypt_file(stream, self.key, armor=False, output=encrypted_filepath)
+        helpers.recreate_directories(destination, helpers.strip_path(filepath)[0])
+        encrypted_filepath = destination or "{self.location}/{}".format()
+        self.gpg.decrypt_file(stream, output=encrypted_filepath)
 
         return encrypted_filepath

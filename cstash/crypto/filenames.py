@@ -21,7 +21,7 @@ class Filenames():
     def search(self, obj, db=None):
         """
         Search the database for partial matches of [obj], and return a list of matches
-        in the tuple form: ("obj", {"obsfucated name", "cryptographer"})
+        in the tuple form: ("obj", {"obsfucated name": string, "cryptographer": string})
         """
 
         db = db or self.db
