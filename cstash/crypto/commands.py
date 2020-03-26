@@ -11,9 +11,10 @@ import logging
 @click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
+@click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
 @click.argument('filepath', metavar='filename')
 @click.argument('bucket')
-def stash(ctx, cryptographer, storage_provider, key, filepath, bucket):
+def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
     log_level = ctx.obj.get('log_level')
     helpers.set_logger(level=log_level)
     from cstash.crypto import crypto
@@ -27,6 +28,12 @@ def stash(ctx, cryptographer, storage_provider, key, filepath, bucket):
     for f in paths:
         try:
             filename_db = Filenames(ctx.obj.get('cstash_directory'), log_level)
+            if filename_db.existing_hash(f) and force != True:
+                print("This version of your file is already uploaded. Use -f to override and upload it again anyway")
+                exit(0)
+            if filename_db.existing_hash(f) and force == True:
+                logging.warning("Re-uploaded same file: {}".format(f))
+
             filename_db_mapping = filename_db.store(f, cryptographer)
             logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 

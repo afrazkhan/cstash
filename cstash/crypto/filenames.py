@@ -6,6 +6,7 @@ import secrets
 from pathlib import Path
 import cstash.libs.helpers as helpers
 import logging
+import hashlib
 
 class Filenames():
     """
@@ -32,6 +33,39 @@ class Filenames():
 
         return keys
 
+    def file_hash(self, filepath):
+        """
+        Return the sha256 hash for [filepath], or False on failure
+        """
+
+        try:
+            sha256 = hashlib.sha256()
+            with open(filepath, 'rb') as f:
+                for block in iter(lambda: f.read(4096), b''):
+                    sha256.update(block)
+            return sha256.hexdigest()
+        except Exception as e:
+            logging.error("Couldn't hash the file {}: {}".format(filepath, e))
+            return False
+
+    def existing_hash(self, filepath):
+        """
+        Check if the hash for [filepath] is the same as the one in the database.
+
+        Return True if it's the same, False if not
+        """
+
+        new_hash = self.file_hash(filepath)
+        existing_entry = self.search(filepath)
+
+        if len(existing_entry) == 0:
+            return False
+
+        if existing_entry[0][1]['obsfucated_name'] == new_hash:
+            return True
+
+        return False
+
     def store(self, obj, cryptographer, db=None):
         """
         Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
@@ -43,7 +77,7 @@ class Filenames():
         db = db or self.db
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
-        new_entry = secrets.token_urlsafe(nbytes=42)
+        new_entry = self.file_hash(obj)
         db_connection[obj] = { "obsfucated_name": new_entry, "cryptographer": cryptographer }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 
