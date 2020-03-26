@@ -40,4 +40,4 @@ def local(ctx, filename):
     if len(results) == 0:
         print("No results found")
     for r in results:
-        print("Partial or full match: {}".format(r))
+        print("Partial or full match: {}".format(r[0]))

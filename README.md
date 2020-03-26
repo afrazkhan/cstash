@@ -8,12 +8,12 @@ When using [server side encryption](https://docs.aws.amazon.com/AmazonS3/latest/
 
 This leaves data in S3 vulnerable to both malicious intent, and potential incompitance.
 
-Cstash encrypts files using local keys before uploading them to cloud storage. Filenames are also obsfucated using `secrets.token_urlsafe`, with a local database holding a map to the real filename (recovery is possible from an encrypted version stored along with the objects).
+Cstash encrypts files using local keys before uploading them to cloud storage. Filenames are also obsfucated using sha256, with a local database holding a map to the real filename (recovery is possible from an encrypted version stored along with the objects).
 
 ## Features
 
 * Local encryption / decryption — keys never leave your machine
-* Filenames are obsfucated too, with only the local DB and an encrypted copy in remote storage as a means of finding out which object is which file
+* Filenames are one way hashed using sha256, with only the local DB and an encrypted copy in remote storage as a means of finding out which object is which file
 * Able to keep arbitrary files on your machine in sync with remote storage
 * Multiple encryption options and cloud providers supported
 

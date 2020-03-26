@@ -61,7 +61,7 @@ class Filenames():
         if len(existing_entry) == 0:
             return False
 
-        if existing_entry[0][1]['obsfucated_name'] == new_hash:
+        if existing_entry[0][1]['file_hash'] == new_hash:
             return True
 
         return False
@@ -78,7 +78,7 @@ class Filenames():
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
         new_entry = self.file_hash(obj)
-        db_connection[obj] = { "obsfucated_name": new_entry, "cryptographer": cryptographer }
+        db_connection[obj] = { "file_hash": new_entry, "cryptographer": cryptographer }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 
         return { 'entry': new_entry, 'db_connection': db_connection }

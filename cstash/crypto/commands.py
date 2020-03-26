@@ -46,9 +46,10 @@ def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
 
             logging.debug('Everything went fine, closing the DB connection')
             filename_db.close_db_connection(filename_db_mapping['db_connection'])
-            # TODO: encryption.delete_temporary_file(obsfucated_name)
+            print("File {} successfully uploaded".format(f))
+            # TODO: encryption.delete_temporary_file(file_hash)
         except Exception as e:
-            logging.error('Something went wrong: {}'.format(e))
+            logging.error("Couldn't encrypt/upload {}: {}".format(f, e))
 
 @click.command()
 @click.pass_context
@@ -68,13 +69,12 @@ def fetch(ctx, storage_provider, original_filepath, bucket):
     if len(filename_db_mapping) == 0:
         raise exceptions.CstashCriticalException(message="Couldn't find {} in the database".format(original_filepath))
 
-    obsfucated_name = filename_db_mapping[0][1]['obsfucated_name']
+    file_hash = filename_db_mapping[0][1]['file_hash']
     cryptographer = filename_db_mapping[0][1]['cryptographer']
-    logging.debug("Fetched {} {} from the database for {}".format(obsfucated_name, cryptographer, original_filepath))
+    logging.debug("Fetched {} {} from the database for {}".format(file_hash, cryptographer, original_filepath))
 
-    fetched_object = Storage(storage_provider, log_level=log_level).download(bucket, obsfucated_name, original_filepath)
-    logging.debug('Downloaded {} from {}'.format(obsfucated_name, storage_provider))
-    logging.error("Couldn't download {} from {}".format(obsfucated_name, storage_provider))
+    fetched_object = Storage(storage_provider, log_level=log_level).download(bucket, file_hash, original_filepath)
+    logging.debug('Downloaded {} from {}'.format(file_hash, storage_provider))
 
     encryption = crypto.Encryption(
         cstash_directory=ctx.obj.get('cstash_directory'), cryptographer=cryptographer, log_level=log_level)
