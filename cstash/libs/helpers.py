@@ -2,6 +2,7 @@ from datetime import timedelta, timezone, datetime
 from time import strftime
 import logging
 import os
+import cstash.libs.exceptions as exceptions
 
 # Take a duration in seconds and work out the datetime value for the datetime at that date and time ago
 def datetime_this_seconds_ago(duration):
@@ -14,6 +15,8 @@ def log(message):
   print(message)
 
 def set_logger(level='ERROR'):
+    """ Return a logging object set to [level], with some opinionated formatting """
+
     return logging.basicConfig(level=level, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S%z')
 
 def get_paths(file):
@@ -51,3 +54,36 @@ def strip_path(path):
     """
 
     return os.path.split(path)
+
+def clear_path(path):
+    """
+    Ensure that [path] is clear for writing to. This means creating all necessary
+    subdirectories, and handling filename deduplication tasks.
+
+    Return the absolute clear filesystem path. This may mean a renaming of of the original
+    file passed in at the end of [path]. For example:
+
+    Return value for existing [path]/foo.txt will be [path]/foo.1.txt
+
+    Return value for existing [path]/foo will be [path]/1.foo
+    """
+
+    if not os.path.isfile(path):
+        raise exceptions.CstashCriticalException(message="[path] must be an absolute path to a file you wish to check")
+
+    stripped_path = strip_path(path)
+    directories = stripped_path[0]
+    filename = stripped_path[1]
+
+    if not os.path.exists(directories):
+        os.makedirs(directories)
+
+    new_path = path
+    counter = 1
+    while os.path.exists(new_path):
+        split_file = filename.split(".")[: len(filename.split(".")) - 1]
+        extension = filename.split(".")[-1]
+        counter += 1
+        new_path = ".".join(split_file + [str(counter)] + [extension])
+
+    return new_path

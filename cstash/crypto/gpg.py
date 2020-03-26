@@ -28,12 +28,16 @@ class GPG():
 
     def decrypt(self, filepath, destination):
         """
-        Decrypt [filepath] to [destination]
+        Decrypt [filepath] to [destination], and return the path to the decrypted file
+        on success, or False on failure
         """
 
-        stream = open(filepath, "rb")
-        helpers.recreate_directories(destination, helpers.strip_path(filepath)[0])
-        encrypted_filepath = destination or "{self.location}/{}".format()
-        self.gpg.decrypt_file(stream, output=encrypted_filepath)
+        try:
+            stream = open(filepath, "rb")
+            encrypted_filepath = destination or "{self.location}/{}".format()
+            self.gpg.decrypt_file(stream, output=encrypted_filepath)
+        except Exception as e:
+            logging.error("Coudln't decrypt {}: {}".format(filepath, e))
+            return False
 
         return encrypted_filepath

@@ -45,9 +45,13 @@ class Storage():
         and store it on disk at [destination]. [destination] defaults to the current
         working directory
 
-        Return [destination] for success, and False for failure
+        Return [destination] for success, or raise a CstashCriticalException on failure
         """
 
         storage_provider = storage_provider or self.storage_provider
 
-        return self.storage_provider.download(bucket, filename, destination)
+        downloaded_object = self.storage_provider.download(bucket, filename, destination)
+        if downloaded_object == False:
+            raise exceptions.CstashCriticalException(message="Couldn't download {} from {}".format(filename, storage_provider))
+
+        return downloaded_object

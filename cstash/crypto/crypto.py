@@ -37,13 +37,13 @@ class Encryption():
 
     def decrypt(self, filepath, destination):
         """
-        Decrypt [filepath] to [destination].gpg
+        Decrypt [filepath] to [destination]
 
         Return the complete path for the decrypted file for success, or raise a
         CstashCriticalException
         """
 
-        decrypted_filename = f"{self.encryptor.decrypt(filepath, destination)}.gpg"
+        decrypted_filename = self.encryptor.decrypt(filepath, helpers.clear_path(destination))
         if decrypted_filename != False:
             return decrypted_filename
         else:
