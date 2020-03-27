@@ -51,7 +51,7 @@ class Storage():
         storage_provider = storage_provider or self.storage_provider
 
         downloaded_object = self.storage_provider.download(bucket, filename, destination)
-        import pdb; pdb.set_trace()
+
         if downloaded_object == False:
             raise exceptions.CstashCriticalException(message="Couldn't download {} from {}".format(filename, storage_provider))
 

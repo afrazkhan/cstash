@@ -68,9 +68,6 @@ def clear_path(path):
     Return value for existing [path]/foo will be [path]/1.foo
     """
 
-    if not os.path.isfile(path):
-        raise exceptions.CstashCriticalException(message="[path] must be an absolute path to a file you wish to check")
-
     stripped_path = strip_path(path)
     directories = stripped_path[0]
     filename = stripped_path[1]
