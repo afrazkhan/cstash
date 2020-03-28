@@ -25,7 +25,6 @@ class Encryption():
         CstashCriticalException
         """
 
-        helpers.recreate_directories(self.cstash_directory, source_filepath)
         encrypted_filepath = f"{self.cstash_directory}/{destination_filename}"
 
         encrypted_filename = self.encryptor.encrypt(
@@ -43,6 +42,7 @@ class Encryption():
         CstashCriticalException
         """
 
+        # TODO: helpers.recreate_directories(filepath)
         decrypted_filename = self.encryptor.decrypt(filepath, helpers.clear_path(destination))
         if decrypted_filename != False:
             return decrypted_filename

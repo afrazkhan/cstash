@@ -72,6 +72,8 @@ def clear_path(path):
     directories = stripped_path[0]
     filename = stripped_path[1]
 
+    # TODO: Check recursively that [directories] are directories
+
     if not os.path.exists(directories):
         os.makedirs(directories)
 
@@ -82,5 +84,15 @@ def clear_path(path):
         extension = filename.split(".")[-1]
         counter += 1
         new_path = ".".join(split_file + [str(counter)] + [extension])
+        new_path = "/".join([directories] + [new_path])
 
     return new_path
+
+def delete_file(path):
+    """
+    Delete file at [path].
+
+    Return True for success, or raise a CstashCriticalException on failure
+    """
+
+    os.remove(path)

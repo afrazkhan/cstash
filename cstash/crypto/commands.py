@@ -47,7 +47,7 @@ def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
             logging.debug('Everything went fine, closing the DB connection')
             filename_db.close_db_connection(filename_db_mapping['db_connection'])
             print("File {} successfully uploaded".format(f))
-            # TODO: helpers.delete_file(encrypted_file_path)
+            helpers.delete_file(encrypted_file_path)
         except Exception as e:
             logging.error("Couldn't encrypt/upload {}: {}".format(f, e))
 
@@ -84,4 +84,4 @@ def fetch(ctx, storage_provider, original_filepath, bucket):
         cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
     encrypted_file_path = encryption.decrypt(temporary_file, original_filepath)
     logging.debug('Decrypted {} to {}'.format(filename_db_mapping[0][0], encrypted_file_path))
-    # TODO: helpers.delete_file(temporary_file)
+    helpers.delete_file(temporary_file)
