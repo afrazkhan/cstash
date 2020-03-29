@@ -5,6 +5,7 @@ from sqlitedict import SqliteDict
 import secrets
 from pathlib import Path
 import cstash.libs.helpers as helpers
+import cstash.libs.exceptions as exceptions
 import logging
 import hashlib
 
@@ -19,15 +20,28 @@ class Filenames():
         helpers.set_logger(level=log_level)
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
-    def search(self, obj, db=None):
+    def search(self, obj, exact=False, db=None):
         """
         Search the database for partial matches of [obj], and return a list of matches
-        in the tuple form: ("obj", {"obsfucated name": string, "cryptographer": string})
+        in the tuple form: ("obj", {"obsfucated name": string, "cryptographer": string}).
+
+        If [exact] == True, then only exact matches will be returned. Since there should
+        only ever be a single exact match for a path in the DB, a CstashCriticalException
+        will be thrown if more than a single element is in the resulting list.
         """
 
         db = db or self.db
         db_connection = SqliteDict(db, autocommit=True, flag='r')
         keys = [(k, db_connection[k]) for k in db_connection.keys() if obj in k]
+
+        if exact is True and len(keys) > 1:
+            raise exceptions.CstashCriticalException(message=("Found more than a single match "
+                  "for {} in the database: {}\n\n"
+                  "You should supply the original absolute path to the file, which you can "
+                  "get with: 'cstash search local [filename]'").format(obj, keys))
+
+        if exact is True and keys[0][0] != obj:
+            return []
 
         db_connection.close()
 

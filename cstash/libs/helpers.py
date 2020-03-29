@@ -19,15 +19,14 @@ def set_logger(level='ERROR'):
 
     return logging.basicConfig(level=level, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S%z')
 
-def get_paths(file):
+def get_paths(target):
     """
-    Return a list of the full paths to [file]. Note that [file] may be a directory. If it's
-    only a single file, the list will have a single element.
-
-    [file] can be relative or absolute.
+    Return a list of the full paths to [target]. Note that [target] may be a directory. If it's
+    only a single file, the list will have a single element. [target] can be either relative or
+    absolute.
     """
 
-    full_path = "{}/{}".format(os.getcwd(), file)
+    full_path = "{}/{}".format(os.getcwd(), target)
     if os.path.isdir(full_path):
         import glob
         return glob.glob("{}/**".format(full_path), recursive=True)
@@ -92,7 +91,8 @@ def delete_file(path):
     """
     Delete file at [path].
 
-    Return True for success, or raise a CstashCriticalException on failure
+    TODO: Not sure if this should happen: Return True for success, or raise a
+          CstashCriticalException on failure
     """
 
     os.remove(path)

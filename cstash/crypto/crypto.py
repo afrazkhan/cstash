@@ -1,5 +1,6 @@
 """
-Calls the appropriate module to do encryption. At the moment it only does GnuPG
+Calls the appropriate module to perform encryption tasks. At the moment
+only GnuPG is supported.
 """
 
 import logging

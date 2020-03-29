@@ -66,7 +66,7 @@ def fetch(ctx, storage_provider, original_filepath, bucket):
 
     cstash_directory = ctx.obj.get('cstash_directory')
     filename_db = Filenames(cstash_directory, log_level)
-    filename_db_mapping = filename_db.search(original_filepath)
+    filename_db_mapping = filename_db.search(original_filepath, exact=True)
     if len(filename_db_mapping) == 0:
         raise exceptions.CstashCriticalException(message="Couldn't find {} in the database".format(original_filepath))
 
