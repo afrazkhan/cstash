@@ -26,12 +26,16 @@ def get_paths(target):
     absolute.
     """
 
-    full_path = "{}/{}".format(os.getcwd(), target)
+    full_path = os.path.abspath(target)
     if os.path.isdir(full_path):
         import glob
-        return glob.glob("{}/**".format(full_path), recursive=True)
+        file_listing = glob.glob("{}/**".format(full_path), recursive=True)
+        file_listing.pop(0)
+        return file_listing
     else:
         return [full_path]
+
+
 
 def recreate_directories(recreate_in, filepath):
     """

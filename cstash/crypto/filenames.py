@@ -80,7 +80,7 @@ class Filenames():
 
         return False
 
-    def store(self, obj, cryptographer, db=None):
+    def store(self, obj, cryptographer, bucket, db=None):
         """
         Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
 
@@ -92,7 +92,7 @@ class Filenames():
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
         new_entry = self.file_hash(obj)
-        db_connection[obj] = { "file_hash": new_entry, "cryptographer": cryptographer }
+        db_connection[obj] = { "file_hash": new_entry, "cryptographer": cryptographer, "bucket": bucket }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 
         return { 'entry': new_entry, 'db_connection': db_connection }
