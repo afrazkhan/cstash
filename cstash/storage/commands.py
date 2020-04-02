@@ -3,8 +3,6 @@ from cstash.libs import helpers
 from cstash.libs.exceptions import CstashCriticalException
 import logging
 
-helpers.set_logger()
-
 @click.group()
 def search():
     pass

@@ -9,7 +9,7 @@ class S3():
 
     def __init__(self, log_level=None):
         self.s3_client = boto3.client('s3')
-        helpers.set_logger(log_level)
+        logging.getLogger().setLevel(log_level)
 
     def search(self, bucket=None, filename=None, s3_client=None):
         """

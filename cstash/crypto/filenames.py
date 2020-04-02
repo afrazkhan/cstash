@@ -17,7 +17,7 @@ class Filenames():
     def __init__(self, cstash_directory, log_level=None):
         """ Create the cstash SQLite DB """
 
-        helpers.set_logger(level=log_level)
+        logging.getLogger().setLevel(log_level)
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
     def search(self, obj, exact=False, db=None):

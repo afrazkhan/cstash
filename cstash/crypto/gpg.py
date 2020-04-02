@@ -6,7 +6,7 @@ import cstash.libs.exceptions as exceptions
 
 class GPG():
     def __init__(self, cstash_directory, log_level=None):
-        helpers.set_logger(level=log_level)
+        logging.getLogger().setLevel(log_level)
         self.cstash_directory = cstash_directory
         self.gpg = gnupg.GPG(gnupghome="{}/.gnupg".format(os.path.expanduser('~')))
 
