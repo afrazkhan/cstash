@@ -31,9 +31,10 @@ def get_paths(target):
         import glob
         file_listing = glob.glob("{}/**".format(full_path), recursive=True)
         file_listing.pop(0)
-        return file_listing
+        return [ this_file for this_file in file_listing if os.path.isfile(this_file) ]
     else:
         return [full_path]
+
 
 
 
