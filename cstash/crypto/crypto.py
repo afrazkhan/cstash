@@ -43,7 +43,6 @@ class Encryption():
         CstashCriticalException
         """
 
-        # TODO: helpers.recreate_directories(filepath)
         decrypted_filename = self.encryptor.decrypt(filepath, helpers.clear_path(destination))
         if decrypted_filename != False:
             return decrypted_filename

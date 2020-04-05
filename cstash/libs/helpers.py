@@ -35,9 +35,6 @@ def get_paths(target):
     else:
         return [full_path]
 
-
-
-
 def recreate_directories(recreate_in, filepath):
     """
     Strip the directories from [filepath], and create the paths in [recreate_in].
@@ -53,10 +50,12 @@ def recreate_directories(recreate_in, filepath):
 
 def strip_path(path):
     """
-    Strip the path from a filepath, and return a tuple with the path as the first
-    element, and just the filename as the second
+    Strip the path from [path], and return a tuple with the path as the first
+    element, and just the filename as the second.
     """
 
+    if os.path.isdir(path):
+        path = f"{path}/"
     return os.path.split(path)
 
 def clear_path(path):
@@ -70,19 +69,23 @@ def clear_path(path):
     Return value for existing [path]/foo.txt will be [path]/foo.1.txt
 
     Return value for existing [path]/foo will be [path]/1.foo
+
+    Raise a CstashCriticalException on failure
     """
 
     stripped_path = strip_path(path)
     directories = stripped_path[0]
     filename = stripped_path[1]
-
-    # TODO: Check recursively that [directories] are directories
-
+    if filename == '':
+        raise exceptions.CstashCriticalException(message="helpers.clear_path() was given a " \
+            "directory instead of a file")
     if not os.path.exists(directories):
         os.makedirs(directories)
+    if os.path.isfile(f"{directories}/{filename}") == False:
+        return path
 
     new_path = path
-    counter = 1
+    counter = 0
     while os.path.exists(new_path):
         split_file = filename.split(".")[: len(filename.split(".")) - 1]
         extension = filename.split(".")[-1]
