@@ -17,31 +17,32 @@ class Filenames():
     def __init__(self, cstash_directory, log_level=None):
         """ Create the cstash SQLite DB """
 
-        logging.getLogger().setLevel(log_level)
+        logging.getLogger().setLevel(level=log_level or "ERROR")
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
     def search(self, obj, exact=False, db=None):
         """
         Search the database for partial matches of [obj], and return a list of matches
-        in the tuple form: ("obj", {"obsfucated name": string, "cryptographer": string}).
+        in the tuple form:
+
+        ("obj", {"file_hash": string, "cryptographer": string, "bucket": string})
 
         If [exact] == True, then only exact matches will be returned. Since there should
         only ever be a single exact match for a path in the DB, a CstashCriticalException
-        will be thrown if more than a single element is in the resulting list.
+        will be thrown if more than a single element is in the resulting list. This shouldn't
+        be possible anyway, since the DB is a key/value store, but it's a safety measure.
         """
 
         db = db or self.db
         db_connection = SqliteDict(db, autocommit=True, flag='r')
-        keys = [(k, db_connection[k]) for k in db_connection.keys() if obj in k]
+        if exact is True:
+            keys = [(k, db_connection[k]) for k in db_connection.keys() if obj == k]
+        else:
+            keys = [(k, db_connection[k]) for k in db_connection.keys() if obj in k]
 
         if exact is True and len(keys) > 1:
-            raise exceptions.CstashCriticalException(message=("Found more than a single match "
-                  "for {} in the database: {}\n\n"
-                  "You should supply the original absolute path to the file, which you can "
-                  "get with: 'cstash search local [filename]'").format(obj, keys))
-
-        if exact is True and keys[0][0] != obj:
-            return []
+            raise exceptions.CstashCriticalException(message=(f"Found more than a single match "
+                  "for {obj} in the database:\n\n{keys}"))
 
         db_connection.close()
 
