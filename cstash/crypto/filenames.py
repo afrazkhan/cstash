@@ -85,7 +85,7 @@ class Filenames():
         """
         Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
 
-        Return a dict of [entry] denoting the obsfucated filename, and [db_connect] to be
+        Return a dict of [entry] denoting the obsfucated filename, and [db_connection] to be
         used later for closing the connection
         """
 
@@ -93,7 +93,10 @@ class Filenames():
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
         new_entry = self.file_hash(obj)
-        db_connection[obj] = { "file_hash": new_entry, "cryptographer": cryptographer, "bucket": bucket }
+        db_connection[obj] = {
+            "file_hash": new_entry,
+            "cryptographer": cryptographer,
+            "bucket": bucket }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 
         return { 'entry': new_entry, 'db_connection': db_connection }

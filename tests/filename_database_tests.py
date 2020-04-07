@@ -57,10 +57,14 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         self.single_directory_file_hash = db_connection[self.single_directory_file_path]["file_hash"]
 
         self.search_cases = {
-            "single_directory_exact": (True, self.single_directory_file_path, self.single_directory_file_hash),
-            "single_directory_fuzzy": (False, self.single_directory_file_path, self.single_directory_file_hash),
-            "two_directories_exact": (True, self.two_directory_tieres_file_path, self.two_directory_tieres_file_hash),
-            "two_directories_fuzzy": (False, self.two_directory_tieres_file_path, self.two_directory_tieres_file_hash)
+            "single_directory_exact": (
+                True, self.single_directory_file_path, self.single_directory_file_hash),
+            "single_directory_fuzzy": (
+                False, self.single_directory_file_path, self.single_directory_file_hash),
+            "two_directories_exact": (
+                True, self.two_directory_tieres_file_path, self.two_directory_tieres_file_hash),
+            "two_directories_fuzzy": (
+                False, self.two_directory_tieres_file_path, self.two_directory_tieres_file_hash)
         }
 
         self.search_cases_non_existant = {
@@ -79,7 +83,8 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
 
     def test_search_existing_record(self):
         """
-        Search for an existing record with permutations of fuzziness, and directory levels.
+        Test search() by searching for an existing record with permutations of fuzziness,
+        and directory levels.
 
         Should return a list with a single element containing the existing record in all cases.
         """
@@ -100,7 +105,8 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
 
     def test_search_non_existent_record(self):
         """
-        Search for a non existing record with permutations of fuzziness, and directory levels.
+        Test search() by searching for a non existing record with permutations of
+        fuzziness, and directory levels.
 
         Should return an empty list in all cases.
         """
@@ -112,17 +118,70 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
                 result = files_db.search(obj=this_path, exact=exact)
                 self.assertTrue(result == [])
 
-    def test_existing_hash_existing(self):
+    def test_existing_hash(self):
         """
-        Hash a dummy file, and see if the hash exists in the database.
+        Test existing_hash() by searching for both known entries that should exist
+        in the database, and made up entries that shouldn't.
 
-        Should return true in all cases.
+        Should return True for known entries, and False for made up entries.
         """
 
         files_db = filenames.Filenames(self.test_files_directory)
 
         self.assertTrue(files_db.existing_hash(self.single_directory_file_path))
         self.assertTrue(files_db.existing_hash(self.two_directory_tieres_file_path))
+        self.assertFalse(files_db.existing_hash("boogada"))
+
+    def test_store_and_close(self):
+        """
+        Store an entry in the database using store(), then close the connection using
+        close_db_connection()
+        """
+
+        files_db = filenames.Filenames(self.test_files_directory)
+
+        result = files_db.store(
+            obj=self.single_directory_file_path,
+            cryptographer=self.dummy_cryptographer,
+            bucket=self.dummy_bucket_name
+        )
+
+        # TODO: Check the entry itself in some low-level way
+        self.assertTrue("entry" in result and "db_connection" in result)
+
+        files_db.close_db_connection(result["db_connection"])
+
+    def test_store_close_and_search(self):
+        """
+        Store an entry with store(), then use search() to find that entry. Also verify
+        the hash with one we calculate here.
+        """
+
+        files_db = filenames.Filenames(self.test_files_directory)
+
+        store_result = files_db.store(
+            obj=self.single_directory_file_path,
+            cryptographer=self.dummy_cryptographer,
+            bucket=self.dummy_bucket_name
+        )
+
+        search_result = files_db.search(obj=self.single_directory_file_path, exact=True)
+
+        self.assertTrue(store_result["entry"] == search_result[0][1]["file_hash"],
+            msg=f"store_result = {store_result}\n" \
+                f"search_result = {search_result}")
+
+        # Calculate the file hash ourselves, to check it with what's stored
+        sha256 = hashlib.sha256()
+        with open(self.single_directory_file_path, 'rb') as f:
+            for block in iter(lambda: f.read(4096), b''):
+                sha256.update(block)
+        correct_hash = sha256.hexdigest()
+
+        self.assertTrue(store_result["entry"] == correct_hash)
+        self.assertTrue(search_result[0][1]["file_hash"] == correct_hash)
+
+        files_db.close_db_connection(store_result["db_connection"])
 
 if __name__ == "__main__":
     unittest.main()
