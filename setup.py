@@ -22,15 +22,15 @@ setuptools.setup(
         'python-gnupg'
         ],
     tests_require=[
-        "unittest",
-        "coverage"
+        "coverage",
+        "moto"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
-    entry_points={"console_scripts": ["cstash=cstash.main:entry_point"]},
+    entry_points={"console_scripts": ["cstash=cstash.main:main"]},
     scripts=[],
     zip_safe=False
 )

@@ -9,7 +9,7 @@ import cstash.libs.exceptions as exceptions
 import logging
 import hashlib
 
-class Filenames():
+class FilenamesDatabase():
     """
     Creates and manages filename obsfucation database
     """
@@ -25,7 +25,7 @@ class Filenames():
         Search the database for partial matches of [obj], and return a list of matches
         in the tuple form:
 
-        ("obj", {"file_hash": string, "cryptographer": string, "bucket": string})
+        ("obj", {"file_hash": string, "cryptographer": string, "storage_provider": string, "bucket": string})
 
         If [exact] == True, then only exact matches will be returned. Since there should
         only ever be a single exact match for a path in the DB, a CstashCriticalException
@@ -81,7 +81,7 @@ class Filenames():
 
         return False
 
-    def store(self, obj, cryptographer, bucket, db=None):
+    def store(self, obj, cryptographer, storage_provider, bucket, db=None):
         """
         Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
 
@@ -96,6 +96,7 @@ class Filenames():
         db_connection[obj] = {
             "file_hash": new_entry,
             "cryptographer": cryptographer,
+            "storage_provider": storage_provider,
             "bucket": bucket }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 

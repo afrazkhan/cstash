@@ -8,16 +8,16 @@ import cstash.libs.helpers as helpers
 import cstash.libs.exceptions as cstash_exceptions
 
 class Encryption():
-    def __init__(self, cstash_directory, cryptographer, log_level="ERROR", extra_args=None):
+    def __init__(self, cstash_directory, cryptographer, log_level="ERROR", extra_args={}):
+        self.cstash_directory = cstash_directory
+
         if cryptographer == 'gpg':
             logging.getLogger().setLevel(log_level)
 
             from cstash.crypto.gpg import GPG
             self.encryptor = GPG(cstash_directory=cstash_directory,
                 log_level=log_level,
-                gnupg_home=extra_args["gnupg_home"])
-
-        self.cstash_directory = cstash_directory
+                gnupg_home=extra_args.get("gnupg_home"))
 
     def encrypt(self, source_filepath, destination_filename, key):
         """

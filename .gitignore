@@ -3,3 +3,4 @@ cstash.egg-info
 config.py
 __pycache__
 test_files
+.eggs

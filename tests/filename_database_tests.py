@@ -5,7 +5,7 @@ from sqlitedict import SqliteDict
 import os
 import shutil
 import hashlib
-import cstash.crypto.filenames as filenames
+import cstash.crypto.filenames_database as filenames
 
 class TestFilenameDatabaseOperations(unittest.TestCase):
     """
@@ -26,6 +26,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         self.single_file = "foobar.txt"
         self.two_directory_tieres_file_path = f"{self.two_directory_tieres}/{self.single_file}"
         self.single_directory_file_path = f"{self.test_files_directory}/{self.single_file}"
+        self.storage_provider = "s3"
 
     def setUp(self):
         """ Create test database with two entries from two test files """
@@ -89,7 +90,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         Should return a list with a single element containing the existing record in all cases.
         """
 
-        files_db = filenames.Filenames(self.test_files_directory)
+        files_db = filenames.FilenamesDatabase(self.test_files_directory)
 
         for name, (exact, this_path, this_hash) in self.search_cases.items():
             with self.subTest(name=name):
@@ -111,7 +112,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         Should return an empty list in all cases.
         """
 
-        files_db = filenames.Filenames(self.test_files_directory)
+        files_db = filenames.FilenamesDatabase(self.test_files_directory)
 
         for name, (exact, this_path) in self.search_cases_non_existant.items():
             with self.subTest(name=name):
@@ -126,7 +127,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         Should return True for known entries, and False for made up entries.
         """
 
-        files_db = filenames.Filenames(self.test_files_directory)
+        files_db = filenames.FilenamesDatabase(self.test_files_directory)
 
         self.assertTrue(files_db.existing_hash(self.single_directory_file_path))
         self.assertTrue(files_db.existing_hash(self.two_directory_tieres_file_path))
@@ -138,11 +139,12 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         close_db_connection()
         """
 
-        files_db = filenames.Filenames(self.test_files_directory)
+        files_db = filenames.FilenamesDatabase(self.test_files_directory)
 
         result = files_db.store(
             obj=self.single_directory_file_path,
             cryptographer=self.dummy_cryptographer,
+            storage_provider=self.storage_provider,
             bucket=self.dummy_bucket_name
         )
 
@@ -157,11 +159,12 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         the hash with one we calculate here.
         """
 
-        files_db = filenames.Filenames(self.test_files_directory)
+        files_db = filenames.FilenamesDatabase(self.test_files_directory)
 
         store_result = files_db.store(
             obj=self.single_directory_file_path,
             cryptographer=self.dummy_cryptographer,
+            storage_provider=self.storage_provider,
             bucket=self.dummy_bucket_name
         )
 

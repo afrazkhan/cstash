@@ -80,7 +80,7 @@ class S3():
             logging.error("Error uploading: {}".format(e))
             return False
 
-    def download(self, bucket, obj, destination=None, s3_client=None):
+    def download(self, bucket, obj, destination, s3_client=None):
         """
         Download [obj] from [bucket], and store on local disk at [destination]
 
@@ -90,8 +90,6 @@ class S3():
         s3_client = s3_client or self.s3_client
         transfer_config = boto3.s3.transfer.TransferConfig(multipart_threshold=1024, use_threads=True, max_concurrency=10)
         s3_transfer = boto3.s3.transfer.S3Transfer(client=s3_client, config=transfer_config)
-
-        destination = destination or os.getcwd
 
         try:
             logging.debug("Downloading {} to {}".format(obj, destination))

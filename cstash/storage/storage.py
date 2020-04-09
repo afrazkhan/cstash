@@ -6,9 +6,10 @@ choose from
 import logging
 import cstash.libs.exceptions as exceptions
 import cstash.libs.helpers as helpers
+import os
 
 class Storage():
-    def __init__(self, storage_provider, log_level):
+    def __init__(self, storage_provider, log_level="ERROR"):
         if storage_provider == 's3':
             from cstash.storage.s3 import S3
             self.storage_provider = S3(log_level)
@@ -39,14 +40,21 @@ class Storage():
         logging.info("Uploading {} to {}".format(filename, bucket))
         return self.storage_provider.upload(bucket, filename)
 
-    def download(self, bucket, filename, destination, storage_provider=None):
+    def download(self, bucket, filename, destination=None, storage_provider=None):
         """
         Make calls to [storage_provider] to fetch [filename] from [bucket],
         and store it on disk at [destination]. [destination] defaults to the current
-        working directory
+        working directory and [filename], or if a directory is given, then
+        [destination]/[filename].
 
         Return [destination] for success, or raise a CstashCriticalException on failure
         """
+
+        if destination != None and os.path.isdir(destination):
+            destination = f"{destination}/{filename}"
+
+        destination = destination or f"{os.getcwd()}/{filename}"
+        destination = helpers.clear_path(destination)
 
         storage_provider = storage_provider or self.storage_provider
 

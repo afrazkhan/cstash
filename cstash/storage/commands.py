@@ -31,9 +31,9 @@ def local(ctx, filename):
 
     log_level = ctx.obj.get('log_level')
 
-    from cstash.crypto.filenames import Filenames
+    from cstash.crypto.filenames_database import FilenamesDatabase
 
-    filename_db = Filenames(ctx.obj.get('cstash_directory'), log_level)
+    filename_db = FilenamesDatabase(ctx.obj.get('cstash_directory'), log_level)
     results = filename_db.search(filename)
     if len(results) == 0:
         print("No results found")
