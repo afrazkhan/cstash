@@ -2,7 +2,11 @@
 
 import click
 import os
+from cstash.config.config import Config
 from pathlib import Path
+from cstash.libs import helpers as helpers
+
+helpers.set_logger()
 
 def create_cstash_directory():
     """ Ensure ~/.cstash directory exists and return it as a string """
@@ -13,17 +17,6 @@ def create_cstash_directory():
 
     return cstash_dir
 
-def get_config(cstash_directory):
-    """ Return configuration from file, if present """
-
-    config_file = f"{cstash_directory}/config"
-
-    if os.path.isfile(config_file):
-        with open(config_file, "r") as contents:
-            return contents.read()
-
-    return None
-
 @click.group()
 @click.option("--log-level", '-l', default="ERROR", type=click.Choice(["INFO", "ERROR", "DEBUG"]), help="How much information to show in logging. Default is ERROR")
 @click.pass_context
@@ -31,7 +24,7 @@ def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory()
     """ Create the ctx object to pass down to all other commands """
 
     cstash_directory = create_cstash_directory()
-    config = get_config(cstash_directory)
+    config = Config(cstash_directory).read()
 
     ctx.obj = {'log_level': log_level, 'cstash_directory': cstash_directory, 'config': config}
 
@@ -43,6 +36,9 @@ main.add_command(stash_command)
 
 from cstash.crypto.commands import fetch as fetch_command
 main.add_command(fetch_command)
+
+from cstash.config.commands import config as config_commands
+main.add_command(config_commands)
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,5 @@
 import logging
 
-logging.getLogger().setLevel('ERROR')
-
 class CstashGeneralError(Exception):
     pass
 

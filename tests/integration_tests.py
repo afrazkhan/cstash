@@ -52,32 +52,28 @@ class TestIntegrations(unittest.TestCase):
     def setUp(self):
         """ Create known path structures on disk to run tests against """
 
-        try:
-            os.makedirs(self.test_files_directory, exist_ok=True)
-            os.makedirs(self.two_directory_tieres, exist_ok=True)
-            os.makedirs(self.gnupg_home, exist_ok=True)
+        os.makedirs(self.test_files_directory, exist_ok=True)
+        os.makedirs(self.two_directory_tieres, exist_ok=True)
+        os.makedirs(self.gnupg_home, exist_ok=True)
 
-            s3_resource = boto3.resource('s3', region_name='eu-west-1')
-            s3_resource.create_bucket(Bucket=self.test_bucket_name) # pylint: disable=no-member
+        s3_resource = boto3.resource('s3', region_name='eu-west-1')
+        s3_resource.create_bucket(Bucket=self.test_bucket_name) # pylint: disable=no-member
 
-            for this_directory in [self.test_files_directory, self.two_directory_tieres]:
-                with open(f"{this_directory}/{self.single_file}", "w+") as test_file:
-                    test_file.write(self.file_contents)
-                    test_file.close()
+        for this_directory in [self.test_files_directory, self.two_directory_tieres]:
+            with open(f"{this_directory}/{self.single_file}", "w+") as test_file:
+                test_file.write(self.file_contents)
+                test_file.close()
 
-            self.gpg = gnupg.GPG(gnupghome=self.gnupg_home)
-            with open(f"{self.gnupg_home}/gpg-agent.conf", "w+") as gpg_configuration:
-                gpg_configuration.write("pinentry-program /usr/bin/pinentry-tty")
-                gpg_configuration.close()
+        self.gpg = gnupg.GPG(gnupghome=self.gnupg_home)
+        with open(f"{self.gnupg_home}/gpg-agent.conf", "w+") as gpg_configuration:
+            gpg_configuration.write("pinentry-program /usr/bin/pinentry-tty")
+            gpg_configuration.close()
 
-            gpg_key_id = f"{self.gpg.gen_key(self.gpg.gen_key_input(passphrase=self.gpg_password))}"
+        gpg_key_id = f"{self.gpg.gen_key(self.gpg.gen_key_input(passphrase=self.gpg_password))}"
 
-            self.encryption_cases = {
-                "gpg_single_file": ("gpg", self.single_directory_file_path, gpg_key_id)
-            }
-
-        except Exception as e:
-            print(f"Couldn't create fixture: {e}")
+        self.encryption_cases = {
+            "gpg_single_file": ("gpg", self.single_directory_file_path, gpg_key_id)
+        }
 
     def tearDown(self):
         """ Delete test fixture files """

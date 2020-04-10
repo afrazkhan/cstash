@@ -1,6 +1,6 @@
 cstash.egg-info
 .vscode
-config.py
+./config.py
 __pycache__
 test_files
 .eggs

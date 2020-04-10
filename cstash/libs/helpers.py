@@ -11,9 +11,6 @@ def datetime_this_seconds_ago(duration):
 def seconds_from_hours(hours):
     return (60*60)*hours
 
-def log(message):
-  print(message)
-
 def set_logger(level='ERROR'):
     """ Return a logging object set to [level], with some opinionated formatting """
 
@@ -104,3 +101,21 @@ def delete_file(path):
     """
 
     os.remove(path)
+
+def merge_dicts(dict_a, dict_b):
+    """
+    Override [dict_a] dict retrieved from the dict_a file with [dict_b] given on the command
+    line. Also handle missing dict_b that are in neither [dict_b] or [dict_a].
+
+    Return a dict with the updated dict_b. This should be all the key/value pairs from both
+    [dict_b] and [dict_a], with the ones from [dict_b] overriding those of [dict_a].
+    """
+
+    dict_a.update( (k,v) for k,v in dict_b.items() if v is not None or (k not in dict_a))
+
+    for k, v in dict_a.items():
+        if v == None:
+            raise exceptions.CstashCriticalException(message=f"{k} was not given via command line " \
+                "options, or the configuration file")
+
+    return dict_a

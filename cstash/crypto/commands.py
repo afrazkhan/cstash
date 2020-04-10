@@ -9,48 +9,52 @@ import logging
 @click.command()
 @click.pass_context
 @click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
-@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
-# FIXME: Either make --key non-optional, or default to getting the first private key in the chain
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
+@click.option('--bucket', '-b', help='Bucket to push objects to')
 @click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
 @click.argument('filepath', metavar='filename')
-@click.argument('bucket')
 def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
     from cstash.crypto import crypto
     from cstash.crypto.filenames_database import FilenamesDatabase
     from cstash.storage.storage import Storage
 
+    # Override options retrieved from the config file, by those from the command line
+    config = ctx.obj.get('config')
+    helpers.merge_dicts(config, {
+        "cryptographer": cryptographer,
+        "storage_provider": storage_provider,
+        "key": key,
+        "bucket": bucket
+    })
+
     log_level = ctx.obj.get('log_level')
     logging.getLogger().setLevel(log_level)
-    encryption = crypto.Encryption(ctx.obj.get('cstash_directory'), cryptographer, log_level)
+    encryption = crypto.Encryption(ctx.obj.get('cstash_directory'), config["cryptographer"], log_level)
     filename_db = FilenamesDatabase(ctx.obj.get('cstash_directory'), log_level)
     paths = helpers.get_paths(filepath)
 
     for this_path in paths:
-        try:
-            if filename_db.existing_hash(this_path) and force != True:
-                print("This version of your file is already uploaded. Use -f to override and upload it again anyway")
-                exit(0)
-            if filename_db.existing_hash(this_path) and force == True:
-                logging.warning("Re-uploaded same file: {}".format(this_path))
+        if filename_db.existing_hash(this_path) and force != True:
+            print("This version of your file is already uploaded. Use -f to override and upload it again anyway")
+            exit(0)
+        if filename_db.existing_hash(this_path) and force == True:
+            logging.warning("Re-uploaded same file: {}".format(this_path))
 
-            filename_db_mapping = filename_db.store(this_path, cryptographer, storage_provider, bucket)
-            logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
+        filename_db_mapping = filename_db.store(this_path, config["cryptographer"], config["storage_provider"], config["bucket"])
+        logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 
-            encrypted_file_path = encryption.encrypt(
-                source_filepath=this_path, destination_filename=filename_db_mapping['entry'], key=key)
-            logging.debug('Encrypted {} to {}'.format(this_path, filename_db_mapping['entry']))
+        encrypted_file_path = encryption.encrypt(
+            source_filepath=this_path, destination_filename=filename_db_mapping['entry'], key=config["key"])
+        logging.debug('Encrypted {} to {}'.format(this_path, filename_db_mapping['entry']))
 
-            Storage(storage_provider, log_level=log_level).upload(bucket, encrypted_file_path)
-            logging.debug('Uploaded {} to {}'.format(filename_db_mapping['entry'], storage_provider))
+        Storage(config["storage_provider"], log_level=log_level).upload(config["bucket"], encrypted_file_path)
+        logging.debug('Uploaded {} to {}'.format(filename_db_mapping['entry'], config["storage_provider"]))
 
-            logging.debug('Everything went fine, closing the DB connection')
-            filename_db.close_db_connection(filename_db_mapping['db_connection'])
-            print("File {} successfully uploaded".format(this_path))
-            helpers.delete_file(encrypted_file_path)
-        except Exception as e:
-            logging.error("Couldn't encrypt/upload {}: {}".format(this_path, e))
-            pass
+        logging.debug('Everything went fine, closing the DB connection')
+        filename_db.close_db_connection(filename_db_mapping['db_connection'])
+        print("File {} successfully uploaded".format(this_path))
+        helpers.delete_file(encrypted_file_path)
 
 @click.command()
 @click.pass_context

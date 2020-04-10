@@ -5,15 +5,16 @@ import os
 import shutil
 from cstash.libs import helpers as helpers
 
-class TestLocalFileOperations(unittest.TestCase):
+class TestHelperOperations(unittest.TestCase):
     """
-    Run tests around all of the methods which perform local file actions
+    Test the functions found in libs.helpers. These mostly revolve around local
+    file operations
     """
 
     def __init__(self, *args, **kwargs):
         """ Set the paths to be used """
 
-        super(TestLocalFileOperations, self).__init__(*args, **kwargs)
+        super(TestHelperOperations, self).__init__(*args, **kwargs)
         self.test_files_directory = f"{os.getcwd()}/test_files"
         self.two_directory_tieres = f"{self.test_files_directory}/one/two"
         self.single_file = "foobar.txt"
