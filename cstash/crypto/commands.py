@@ -8,9 +8,9 @@ import logging
 
 @click.command()
 @click.pass_context
-@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
+@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported')
 @click.option('--bucket', '-b', help='Bucket to push objects to')
 @click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
 @click.argument('filepath', metavar='filename')
@@ -35,11 +35,12 @@ def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
     paths = helpers.get_paths(filepath)
 
     for this_path in paths:
-        if filename_db.existing_hash(this_path) and force != True:
+        file_stored = filename_db.existing_hash(this_path)
+        if file_stored and force != True:
             print("This version of your file is already uploaded. Use -f to override and upload it again anyway")
             exit(0)
-        if filename_db.existing_hash(this_path) and force == True:
-            logging.warning("Re-uploaded same file: {}".format(this_path))
+        if file_stored and force == True:
+            logging.warning("Re-uploading existing file: {}".format(this_path))
 
         filename_db_mapping = filename_db.store(this_path, config["cryptographer"], config["storage_provider"], config["bucket"])
         logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')

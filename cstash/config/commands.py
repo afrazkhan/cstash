@@ -17,7 +17,7 @@ def config():
 def write(ctx, section, cryptographer, storage_provider, key, bucket):
     """
     Set one or more of the options in the config file for [section]. If [section] is not
-    given, default to "default"
+    given, default to "default". The config file will be created if necessary
     """
 
     from cstash.config.config import Config

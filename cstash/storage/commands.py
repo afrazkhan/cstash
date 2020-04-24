@@ -26,7 +26,7 @@ def remote(ctx, bucket=None, filename=None, storage_provider=None):
 @search.command()
 @click.pass_context
 @click.argument('filename')
-def local(ctx, filename):
+def database(ctx, filename):
     """ Search the local database for [filename]. Matches in any path will be returned """
 
     log_level = ctx.obj.get('log_level')

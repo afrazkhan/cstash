@@ -59,8 +59,8 @@ class FilenamesDatabase():
                 for block in iter(lambda: f.read(4096), b''):
                     sha256.update(block)
             return sha256.hexdigest()
-        except Exception as e:
-            logging.error("Couldn't hash the file {}: {}".format(filepath, e))
+        except FileNotFoundError as e:
+            logging.error(f"Couldn't hash the file {filepath}: {e}")
             return False
 
     def existing_hash(self, filepath):
@@ -70,11 +70,12 @@ class FilenamesDatabase():
         Return True if it's the same, False if not
         """
 
-        new_hash = self.file_hash(filepath)
         existing_entry = self.search(filepath)
 
         if len(existing_entry) == 0:
             return False
+
+        new_hash = self.file_hash(filepath)
 
         if existing_entry[0][1]['file_hash'] == new_hash:
             return True
@@ -93,6 +94,9 @@ class FilenamesDatabase():
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
         new_entry = self.file_hash(obj)
+        if not new_entry:
+            raise exceptions.CstashCriticalException(message="File couldn't be hashed, exiting")
+
         db_connection[obj] = {
             "file_hash": new_entry,
             "cryptographer": cryptographer,

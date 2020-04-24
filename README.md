@@ -20,3 +20,15 @@ Cstash encrypts files using local keys before uploading them to cloud storage. F
 ## Instalation
 
 Don't, it isn't ready yet.
+
+## TODO
+
+A lazy man's ticket list:
+
+* Encrypt the local DB and back it up to the default storage provider on every `cstash stash`. Alternative may be needed depending on performance hit
+* Implement `cstash delete local` and `cstash delete remote` for DB and storage operations, respectively
+* Implement daemon
+* Implement Python native encryption
+* Implement Google Cloud storage
+* Implement Digital Ocean storage
+* Add `cstash fetch [filename] --destination` to override original the file path
