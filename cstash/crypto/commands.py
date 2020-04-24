@@ -61,11 +61,16 @@ def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
 @click.pass_context
 @click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Override the object storage provider where the object is stored. Currently only the default option of S3 is supported.')
 @click.option('--bucket', '-b', help='Override the known bucket for objects to be fetched')
+@click.option('--ask-for-password', '-a', is_flag=True, help='Whether to ask for a password to decrypt the files with')
 @click.argument('original-filepath')
-def fetch(ctx, storage_provider, bucket, original_filepath):
+def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
     from cstash.crypto import crypto
     from cstash.crypto.filenames_database import FilenamesDatabase
     from cstash.storage.storage import Storage
+
+    password = None
+    if ask_for_password:
+        password = click.prompt("Password", hide_input=True)
 
     log_level = ctx.obj.get('log_level')
     logging.getLogger().setLevel(log_level)
@@ -91,7 +96,7 @@ def fetch(ctx, storage_provider, bucket, original_filepath):
 
             encryption = crypto.Encryption(
                 cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
-            encrypted_file_path = encryption.decrypt(temporary_file, this_path)
+            encrypted_file_path = encryption.decrypt(temporary_file, this_path, password)
             logging.debug('Decrypted {} to {}'.format(filename_db_mapping[0][0], encrypted_file_path))
             helpers.delete_file(temporary_file)
         except Exception as e:

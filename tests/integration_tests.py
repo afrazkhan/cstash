@@ -79,6 +79,7 @@ class TestIntegrations(unittest.TestCase):
         """ Delete test fixture files """
 
         shutil.rmtree(self.test_files_directory)
+        # TODO: Also remove self.single_file from when it gets created in the CWD
 
     def test_encrypt_decrypt(self):
         """
@@ -115,7 +116,6 @@ class TestIntegrations(unittest.TestCase):
 
                 retrieved_file_contents = open(retrieved_file, "r").read()
                 self.assertEqual(self.file_contents, retrieved_file_contents)
-
 
     def test_complete_functionality(self):
         """
