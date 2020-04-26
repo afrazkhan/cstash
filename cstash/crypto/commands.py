@@ -13,11 +13,22 @@ import logging
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported')
 @click.option('--bucket', '-b', help='Bucket to push objects to')
 @click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
-@click.argument('filepath', metavar='filename')
-def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
+@click.option('--backup', '-d', is_flag=True, default=False, help='TODO: Encrypt and backup the database to the remote bucket')
+@click.argument('filepath', metavar='filename', required=False)
+def stash(ctx, cryptographer, key, storage_provider, bucket, force, backup, filepath):
+    if filepath == None and backup == False:
+        logging.error("Either [filename] or --backup are needed\n")
+        print(stash.get_help(ctx))
+        exit(1)
+
     from cstash.crypto import crypto
     from cstash.crypto.filenames_database import FilenamesDatabase
     from cstash.storage.storage import Storage
+
+    cstash_directory = ctx.obj.get('cstash_directory')
+
+    if backup:
+        filepath = f"{cstash_directory}/filenames.sqlite"
 
     # Override options retrieved from the config file, by those from the command line
     config = ctx.obj.get('config')
@@ -30,8 +41,8 @@ def stash(ctx, cryptographer, storage_provider, key, force, filepath, bucket):
 
     log_level = ctx.obj.get('log_level')
     logging.getLogger().setLevel(log_level)
-    encryption = crypto.Encryption(ctx.obj.get('cstash_directory'), config["cryptographer"], log_level)
-    filename_db = FilenamesDatabase(ctx.obj.get('cstash_directory'), log_level)
+    encryption = crypto.Encryption(cstash_directory, config["cryptographer"], log_level)
+    filename_db = FilenamesDatabase(cstash_directory, log_level)
     paths = helpers.get_paths(filepath)
 
     for this_path in paths:

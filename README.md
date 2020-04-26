@@ -25,7 +25,11 @@ Don't, it isn't ready yet.
 
 A lazy man's ticket list:
 
-* Encrypt the local DB and back it up to the default storage provider on every `cstash stash`. Alternative may be needed depending on performance hit
+* Add option to backup database after stashing a file too
+* Move db parameter to class initialisation instead of method calls for FilenamesDatabase()
+* Use click() native file handling (maybe?):
+  * https://click.palletsprojects.com/en/7.x/arguments/#file-arguments
+  * https://click.palletsprojects.com/en/7.x/arguments/#file-path-arguments
 * Implement `cstash delete local` and `cstash delete remote` for DB and storage operations, respectively
 * Implement daemon
 * Implement Python native encryption
