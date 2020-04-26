@@ -85,29 +85,25 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
     paths = helpers.get_paths(original_filepath)
 
     for this_path in paths:
-        try:
-            filename_db_mapping = filename_db.search(this_path, exact=True)
+        filename_db_mapping = filename_db.search(this_path, exact=True)
 
-            file_hash = filename_db_mapping[0][1]['file_hash']
-            cryptographer = filename_db_mapping[0][1]['cryptographer']
-            storage_provider = storage_provider or filename_db_mapping[0][1]['storage_provider']
-            bucket = filename_db_mapping[0][1]['bucket']
-            logging.debug("Fetched {} {} from the database for {}".format(file_hash, cryptographer, original_filepath))
+        file_hash = filename_db_mapping[0][1]['file_hash']
+        cryptographer = filename_db_mapping[0][1]['cryptographer']
+        storage_provider = storage_provider or filename_db_mapping[0][1]['storage_provider']
+        bucket = filename_db_mapping[0][1]['bucket']
+        logging.debug("Fetched {} {} from the database for {}".format(file_hash, cryptographer, original_filepath))
 
-            temporary_file = "{}/{}".format(cstash_directory, file_hash)
+        temporary_file = "{}/{}".format(cstash_directory, file_hash)
 
-            storage = Storage(storage_provider, log_level=log_level)
-            storage.download(bucket, file_hash, temporary_file)
-            logging.debug('Downloaded {} from {}'.format(file_hash, storage_provider))
+        storage = Storage(storage_provider, log_level=log_level)
+        storage.download(bucket, file_hash, temporary_file)
+        logging.debug('Downloaded {} from {}'.format(file_hash, storage_provider))
 
-            encryption = crypto.Encryption(
-                cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
-            encrypted_file_path = encryption.decrypt(temporary_file, this_path, password)
-            logging.debug('Decrypted {} to {}'.format(filename_db_mapping[0][0], encrypted_file_path))
-            helpers.delete_file(temporary_file)
-        except Exception as e:
-            logging.warning("Failed to decrypt {}: {}".format(this_path, e))
-            pass
+        encryption = crypto.Encryption(
+            cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
+        encrypted_file_path = encryption.decrypt(temporary_file, this_path, password)
+        logging.debug('Decrypted {} to {}'.format(filename_db_mapping[0][0], encrypted_file_path))
+        helpers.delete_file(temporary_file)
 
 @click.group()
 def database():
@@ -169,3 +165,34 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
 
     print("File {} successfully uploaded".format(this_path))
     helpers.delete_file(encrypted_file_path)
+
+@database.command()
+@click.pass_context
+@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='Encryption that was used for the database file')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='Which storage backend was used to upload the database file')
+@click.option('--bucket', '-b', required=True, help='Which bucket the database file was uploaded to')
+@click.option('--ask-for-password', '-a', is_flag=True, help='Whether to ask for a password to decrypt the files with')
+def restore(ctx, cryptographer, storage_provider, bucket, ask_for_password):
+    """ Restore the database file from a backup in storage """
+
+    from cstash.crypto import crypto
+    from cstash.storage.storage import Storage
+
+    password = None
+    if ask_for_password:
+        password = click.prompt("Password", hide_input=True)
+
+    log_level = ctx.obj.get('log_level')
+    logging.getLogger().setLevel(log_level)
+    cstash_directory = ctx.obj.get('cstash_directory')
+    remote_filename = "filenames.sqlite.encrypted"
+    temporary_file = helpers.get_paths(f"{cstash_directory}/filenames.sqlite.encrypted")[0]
+
+    storage = Storage(storage_provider, log_level=log_level)
+    storage.download(bucket, remote_filename, temporary_file)
+    logging.debug('Downloaded {} from {}'.format(remote_filename, storage_provider))
+
+    encryption = crypto.Encryption(
+        cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
+    encryption.decrypt(temporary_file, f"{cstash_directory}/filenames.sqlite", password)
+    helpers.delete_file(temporary_file)

@@ -30,7 +30,7 @@ A lazy man's ticket list:
 * Use click() native file handling (maybe?):
   * https://click.palletsprojects.com/en/7.x/arguments/#file-arguments
   * https://click.palletsprojects.com/en/7.x/arguments/#file-path-arguments
-* Implement `cstash delete local` and `cstash delete remote` for DB and storage operations, respectively
+* Implement `cstash database delete [entry]` and `cstash storage delete [object]`
 * Implement daemon
 * Implement Python native encryption
 * Implement Google Cloud storage

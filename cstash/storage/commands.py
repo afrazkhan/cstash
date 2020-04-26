@@ -3,7 +3,12 @@ from cstash.libs import helpers
 from cstash.libs.exceptions import CstashCriticalException
 import logging
 
-@click.command()
+@click.group()
+def storage():
+    """ Perform operations on the backend storage """
+    pass
+
+@storage.command()
 @click.pass_context
 @click.option('--bucket', '-b', help='Bucket to search. Mandatory if you supply --filename')
 @click.option('--filename', '-f', help='Filename to search for in --bucket')
