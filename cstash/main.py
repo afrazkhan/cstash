@@ -37,8 +37,11 @@ main.add_command(stash_command)
 from cstash.crypto.commands import fetch as fetch_command
 main.add_command(fetch_command)
 
-from cstash.config.commands import config as config_commands
-main.add_command(config_commands)
+from cstash.crypto.commands import database as database_commands
+main.add_command(database_commands)
+
+from cstash.config.commands import config as config_command
+main.add_command(config_command)
 
 if __name__ == "__main__":
     main()

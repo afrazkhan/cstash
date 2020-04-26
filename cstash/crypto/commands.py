@@ -13,22 +13,15 @@ import logging
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported')
 @click.option('--bucket', '-b', help='Bucket to push objects to')
 @click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
-@click.option('--backup', '-d', is_flag=True, default=False, help='TODO: Encrypt and backup the database to the remote bucket')
-@click.argument('filepath', metavar='filename', required=False)
-def stash(ctx, cryptographer, key, storage_provider, bucket, force, backup, filepath):
-    if filepath == None and backup == False:
-        logging.error("Either [filename] or --backup are needed\n")
-        print(stash.get_help(ctx))
-        exit(1)
+@click.argument('filepath', metavar='filename')
+def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
+    """ Encrypt, and upload objects to remote storage under hashed filenames """
 
     from cstash.crypto import crypto
     from cstash.crypto.filenames_database import FilenamesDatabase
     from cstash.storage.storage import Storage
 
     cstash_directory = ctx.obj.get('cstash_directory')
-
-    if backup:
-        filepath = f"{cstash_directory}/filenames.sqlite"
 
     # Override options retrieved from the config file, by those from the command line
     config = ctx.obj.get('config')
@@ -75,6 +68,8 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, backup, file
 @click.option('--ask-for-password', '-a', is_flag=True, help='Whether to ask for a password to decrypt the files with')
 @click.argument('original-filepath')
 def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
+    """ Fetch encrypted files from remote storage and decrypt them """
+
     from cstash.crypto import crypto
     from cstash.crypto.filenames_database import FilenamesDatabase
     from cstash.storage.storage import Storage
@@ -113,3 +108,64 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
         except Exception as e:
             logging.warning("Failed to decrypt {}: {}".format(this_path, e))
             pass
+
+@click.group()
+def database():
+    """ Perform operations on the local database """
+    pass
+
+@database.command()
+@click.pass_context
+@click.argument('filename')
+def search(ctx, filename):
+    """ Search the local database for [filename]. Matches in any path will be returned """
+
+    log_level = ctx.obj.get('log_level')
+
+    from cstash.crypto.filenames_database import FilenamesDatabase
+
+    filename_db = FilenamesDatabase(ctx.obj.get('cstash_directory'), log_level)
+    results = filename_db.search(filename)
+    if len(results) == 0:
+        print("No results found")
+    for r in results:
+        print("Partial or full match: {}".format(r[0]))
+
+@database.command()
+@click.pass_context
+@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported')
+@click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported')
+@click.option('--bucket', '-b', help='Bucket to push objects to')
+def backup(ctx, cryptographer, key, storage_provider, bucket):
+    """ Encrypt and backup local database to remote storage """
+
+    from cstash.crypto import crypto
+    from cstash.storage.storage import Storage
+
+    cstash_directory = ctx.obj.get('cstash_directory')
+
+    # Override options retrieved from the config file, by those from the command line
+    config = ctx.obj.get('config')
+    helpers.merge_dicts(config, {
+        "cryptographer": cryptographer,
+        "storage_provider": storage_provider,
+        "key": key,
+        "bucket": bucket
+    })
+
+    log_level = ctx.obj.get('log_level')
+    logging.getLogger().setLevel(log_level)
+    encryption = crypto.Encryption(cstash_directory, config["cryptographer"], log_level)
+
+    this_path = f"{cstash_directory}/filenames.sqlite"
+
+    encrypted_file_path = encryption.encrypt(
+        source_filepath=this_path, destination_filename="filenames.sqlite.encrypted", key=config["key"])
+    logging.debug('Encrypted {} to {}'.format(this_path, f"{this_path}.encrypted"))
+
+    Storage(config["storage_provider"], log_level=log_level).upload(config["bucket"], encrypted_file_path)
+    logging.debug('Uploaded {} to {}'.format(f"{this_path}.encrypted", config["storage_provider"]))
+
+    print("File {} successfully uploaded".format(this_path))
+    helpers.delete_file(encrypted_file_path)

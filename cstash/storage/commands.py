@@ -3,16 +3,12 @@ from cstash.libs import helpers
 from cstash.libs.exceptions import CstashCriticalException
 import logging
 
-@click.group()
-def search():
-    pass
-
-@search.command()
+@click.command()
 @click.pass_context
 @click.option('--bucket', '-b', help='Bucket to search. Mandatory if you supply --filename')
 @click.option('--filename', '-f', help='Filename to search for in --bucket')
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only supports the default S3 provider')
-def remote(ctx, bucket=None, filename=None, storage_provider=None):
+def search(ctx, bucket=None, filename=None, storage_provider=None):
     """ Search the remote storage bucket for [filename] """
 
     from cstash.storage import storage
@@ -22,20 +18,3 @@ def remote(ctx, bucket=None, filename=None, storage_provider=None):
 
     storage = storage.Storage(storage_provider, ctx.obj.get('log_level'))
     print(storage.search(bucket=bucket, filename=filename, storage_provider=storage_provider))
-
-@search.command()
-@click.pass_context
-@click.argument('filename')
-def database(ctx, filename):
-    """ Search the local database for [filename]. Matches in any path will be returned """
-
-    log_level = ctx.obj.get('log_level')
-
-    from cstash.crypto.filenames_database import FilenamesDatabase
-
-    filename_db = FilenamesDatabase(ctx.obj.get('cstash_directory'), log_level)
-    results = filename_db.search(filename)
-    if len(results) == 0:
-        print("No results found")
-    for r in results:
-        print("Partial or full match: {}".format(r[0]))

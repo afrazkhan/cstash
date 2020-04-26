@@ -5,6 +5,7 @@ import logging
 
 @click.group()
 def config():
+    """ Perform operations on the configuration file """
     pass
 
 @config.command()
