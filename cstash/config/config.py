@@ -4,6 +4,7 @@ Handle reading and writing Cstash configuration
 
 import configparser
 import logging
+import os
 import cstash.libs.exceptions as exceptions
 
 class Config():
@@ -14,11 +15,14 @@ class Config():
 
     def read(self, section="default"):
         """
-        Read [section] from self.config_file and return it
+        Read [section] from self.config_file and return it. Return None if there is no config file
         """
 
         self.config.read(self.config_file)
-        return dict(self.config[section])
+        if os.path.isfile(self.config_file):
+            return dict(self.config[section])
+        else:
+            return None
 
     def write(self, section="default", options={}):
         """
