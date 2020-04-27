@@ -87,17 +87,17 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
     for this_path in paths:
         filename_db_mapping = filename_db.search(this_path, exact=True)
 
-        file_hash = filename_db_mapping[0][1]['file_hash']
+        filename_hash = filename_db_mapping[0][1]['filename_hash']
         cryptographer = filename_db_mapping[0][1]['cryptographer']
         storage_provider = storage_provider or filename_db_mapping[0][1]['storage_provider']
         bucket = filename_db_mapping[0][1]['bucket']
-        logging.debug("Fetched {} {} from the database for {}".format(file_hash, cryptographer, original_filepath))
+        logging.debug("Fetched {} {} from the database for {}".format(filename_hash, cryptographer, original_filepath))
 
-        temporary_file = "{}/{}".format(cstash_directory, file_hash)
+        temporary_file = "{}/{}".format(cstash_directory, filename_hash)
 
         storage = Storage(storage_provider, log_level=log_level)
-        storage.download(bucket, file_hash, temporary_file)
-        logging.debug('Downloaded {} from {}'.format(file_hash, storage_provider))
+        storage.download(bucket, filename_hash, temporary_file)
+        logging.debug('Downloaded {} from {}'.format(filename_hash, storage_provider))
 
         encryption = crypto.Encryption(
             cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)

@@ -44,28 +44,27 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
                 test_file.write("Some amazing things, right here")
 
             sha256 = hashlib.sha256()
-            with open(current_file, 'rb') as f:
-                for block in iter(lambda: f.read(4096), b''):
-                    sha256.update(block)
+            sha256.update(bytes(f"{current_file}", encoding="utf-8"))
             current_hash = sha256.hexdigest()
+
             db_connection[current_file] = {
-                "file_hash": current_hash,
+                "filename_hash": current_hash,
                 "cryptographer": self.dummy_cryptographer,
                 "bucket": self.dummy_bucket_name
             }
 
-        self.two_directory_tieres_file_hash = db_connection[self.two_directory_tieres_file_path]["file_hash"]
-        self.single_directory_file_hash = db_connection[self.single_directory_file_path]["file_hash"]
+        self.two_directory_tieres_filename_hash = db_connection[self.two_directory_tieres_file_path]["filename_hash"]
+        self.single_directory_filename_hash = db_connection[self.single_directory_file_path]["filename_hash"]
 
         self.search_cases = {
             "single_directory_exact": (
-                True, self.single_directory_file_path, self.single_directory_file_hash),
+                True, self.single_directory_file_path, self.single_directory_filename_hash),
             "single_directory_fuzzy": (
-                False, self.single_directory_file_path, self.single_directory_file_hash),
+                False, self.single_directory_file_path, self.single_directory_filename_hash),
             "two_directories_exact": (
-                True, self.two_directory_tieres_file_path, self.two_directory_tieres_file_hash),
+                True, self.two_directory_tieres_file_path, self.two_directory_tieres_filename_hash),
             "two_directories_fuzzy": (
-                False, self.two_directory_tieres_file_path, self.two_directory_tieres_file_hash)
+                False, self.two_directory_tieres_file_path, self.two_directory_tieres_filename_hash)
         }
 
         self.search_cases_non_existant = {
@@ -98,7 +97,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
                 self.assertTrue(result == [(
                         this_path,
                         {
-                            "file_hash": this_hash,
+                            "filename_hash": this_hash,
                             "cryptographer": self.dummy_cryptographer,
                             "bucket": self.dummy_bucket_name
                         }
@@ -170,19 +169,17 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
 
         search_result = files_db.search(obj=self.single_directory_file_path, exact=True)
 
-        self.assertTrue(store_result["entry"] == search_result[0][1]["file_hash"],
+        self.assertTrue(store_result["entry"] == search_result[0][1]["filename_hash"],
             msg=f"store_result = {store_result}\n" \
                 f"search_result = {search_result}")
 
         # Calculate the file hash ourselves, to check it with what's stored
         sha256 = hashlib.sha256()
-        with open(self.single_directory_file_path, 'rb') as f:
-            for block in iter(lambda: f.read(4096), b''):
-                sha256.update(block)
+        sha256.update(bytes(f"{self.single_directory_file_path}", encoding="utf-8"))
         correct_hash = sha256.hexdigest()
 
         self.assertTrue(store_result["entry"] == correct_hash)
-        self.assertTrue(search_result[0][1]["file_hash"] == correct_hash)
+        self.assertTrue(search_result[0][1]["filename_hash"] == correct_hash)
 
         files_db.close_db_connection(store_result["db_connection"])
 

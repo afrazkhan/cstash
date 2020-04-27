@@ -25,7 +25,7 @@ class FilenamesDatabase():
         Search the database for partial matches of [obj], and return a list of matches
         in the tuple form:
 
-        ("obj", {"file_hash": string, "cryptographer": string, "storage_provider": string, "bucket": string})
+        ("obj", {"filename_hash": string, "cryptographer": string, "storage_provider": string, "bucket": string})
 
         If [exact] == True, then only exact matches will be returned. Since there should
         only ever be a single exact match for a path in the DB, a CstashCriticalException
@@ -50,7 +50,7 @@ class FilenamesDatabase():
 
     def file_hash(self, filepath):
         """
-        Return the sha256 hash for [filepath], or False on failure
+        Return the sha256 hash for the file at [filepath], or False on failure
         """
 
         try:
@@ -61,6 +61,18 @@ class FilenamesDatabase():
             return sha256.hexdigest()
         except FileNotFoundError as e:
             logging.error(f"Couldn't hash the file {filepath}: {e}")
+            return False
+
+    def filename_hash(self, filepath):
+        """
+        Return the sha256 hash for [filepath], or False for failure
+        """
+
+        try:
+            sha256 = hashlib.sha256()
+            sha256.update(bytes(f"{filepath}", encoding="utf-8"))
+            return sha256.hexdigest()
+        except Exception:
             return False
 
     def existing_hash(self, filepath):
@@ -75,9 +87,9 @@ class FilenamesDatabase():
         if len(existing_entry) == 0:
             return False
 
-        new_hash = self.file_hash(filepath)
+        new_hash = self.filename_hash(filepath)
 
-        if existing_entry[0][1]['file_hash'] == new_hash:
+        if existing_entry[0][1]['filename_hash'] == new_hash:
             return True
 
         return False
@@ -93,12 +105,12 @@ class FilenamesDatabase():
         db = db or self.db
         db_connection = SqliteDict(db, autocommit=False, flag='c')
 
-        new_entry = self.file_hash(obj)
+        new_entry = self.filename_hash(obj)
         if not new_entry:
             raise exceptions.CstashCriticalException(message="File couldn't be hashed, exiting")
 
         db_connection[obj] = {
-            "file_hash": new_entry,
+            "filename_hash": new_entry,
             "cryptographer": cryptographer,
             "storage_provider": storage_provider,
             "bucket": bucket }
