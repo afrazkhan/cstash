@@ -18,7 +18,7 @@ class Daemon():
 
     def get_files_to_watch(self):
         """
-        Get a list of files to watch
+        Return a list of files to watch from the filesnames database
         """
 
         files_to_watch = FilenamesDatabase(self.cstash_directory).list_all_entries()

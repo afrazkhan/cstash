@@ -4,3 +4,5 @@ cstash.egg-info
 __pycache__
 test_files
 .eggs
+./tests/htmlcov
+./tests/.coverage
