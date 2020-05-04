@@ -1,4 +1,4 @@
-**NOTE: DO NOT USE, THIS IS A WORK IN PROGRESSS**
+# Cstash
 
 A zero-knowledge file syncing solution.
 
@@ -19,7 +19,31 @@ Cstash encrypts files using local keys before uploading them to cloud storage. F
 
 ## Instalation
 
-Don't, it isn't ready yet.
+`pip install git+https://github.com/afrazkhan/cstash`
+
+## Usage
+
+The CLI is fairly well documented with `--help`, but these are the basic operations for the lazy:
+
+```sh
+# Set configuration so you don't need to pass options to the stash command every time
+cstash config -c gpg -s s3 -k [GPG KEY ID] -b [S3 BUCKET NAME]
+
+# Encrypt a file to GPG and stash it away in S3. You can override the values in your config by passing options to stash to mix and match cryptographers and remote storage providers
+cstash stash [FILE TO STASH]
+
+# Lookup stored files in the database
+cstash database search [PART OF FILENAME]
+
+# Retrieve a file from remote storage
+cstash fetch [FULL PATH TO FILE]
+```
+
+There is also a daemon mode which will watch on-disk copies of previously uploaded files and re-upload them when they change:
+
+```sh
+cstash daemon start
+```
 
 ## TODO
 
@@ -31,7 +55,6 @@ A lazy man's ticket list:
   * https://click.palletsprojects.com/en/7.x/arguments/#file-arguments
   * https://click.palletsprojects.com/en/7.x/arguments/#file-path-arguments
 * Implement `cstash database delete [entry]` and `cstash storage delete [object]`
-* Implement daemon
 * Implement Python native encryption
 * Implement Google Cloud storage
 * Implement Digital Ocean storage
