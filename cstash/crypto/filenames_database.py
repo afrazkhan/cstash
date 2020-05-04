@@ -20,6 +20,16 @@ class FilenamesDatabase():
         logging.getLogger().setLevel(level=log_level or "ERROR")
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
+    def list_all_entries(self, db=None):
+        """ Return a listing of all keys in the database """
+
+        db = db or self.db
+        db_connection = SqliteDict(db, autocommit=True, flag='r')
+        keys = list(dict(db_connection).keys())
+        db_connection.close()
+
+        return keys
+
     def search(self, obj, exact=False, db=None):
         """
         Search the database for partial matches of [obj], and return a list of matches

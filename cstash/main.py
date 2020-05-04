@@ -20,8 +20,13 @@ def create_cstash_directory():
 @click.group()
 @click.option("--log-level", '-l', default="ERROR", type=click.Choice(["INFO", "ERROR", "DEBUG"], case_sensitive=False), help="How much information to show in logging. Default is ERROR")
 @click.pass_context
-def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory()):
-    """ Create the ctx object to pass down to all other commands """
+def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory(),):
+    """
+    Stash and fetch encrypted versions of your files to your choice of storage providers
+
+    This function does nothing by itself, and only creates the ctx object to pass down to all
+    other commands
+    """
 
     cstash_directory = create_cstash_directory()
     config = Config(cstash_directory).read()
@@ -42,6 +47,9 @@ main.add_command(database_commands)
 
 from cstash.config.commands import config as config_command
 main.add_command(config_command)
+
+from cstash.daemon.commands import daemon as daemon_command
+main.add_command(daemon_command)
 
 if __name__ == "__main__":
     main()

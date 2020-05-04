@@ -19,7 +19,8 @@ setuptools.setup(
         'datetime',
         'click',
         'sqlitedict',
-        'python-gnupg'
+        'python-gnupg',
+        'daemon'
         ],
     tests_require=[
         "coverage",

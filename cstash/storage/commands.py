@@ -14,7 +14,7 @@ def storage():
 @click.option('--filename', '-f', help='Filename to search for in --bucket')
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only supports the default S3 provider')
 def search(ctx, bucket=None, filename=None, storage_provider=None):
-    """ Search the remote storage bucket for [filename] """
+    """ Search the [bucket] on [storage_provider] for [filename] """
 
     from cstash.storage import storage
 
