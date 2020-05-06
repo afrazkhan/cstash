@@ -40,6 +40,7 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
 
     for this_path in paths:
         file_stored = filename_db.existing_hash(this_path)
+        # FIXME: There should be an additional AND comparison between the stored file_hash and the current file hash
         if file_stored and force != True:
             print("This version of your file is already uploaded. Use -f to override and upload it again anyway")
             exit(0)

@@ -21,7 +21,7 @@ class Daemon():
         Return a list of files to watch from the filesnames database
         """
 
-        files_to_watch = FilenamesDatabase(self.cstash_directory).list_all_entries()
+        files_to_watch = list(FilenamesDatabase(self.cstash_directory).return_all_entries())
         files_to_watch.append(f"{self.cstash_directory}/filenames.sqlite")
 
         return files_to_watch

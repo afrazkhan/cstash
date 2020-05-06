@@ -8,6 +8,7 @@ import cstash.libs.helpers as helpers
 import cstash.libs.exceptions as exceptions
 import logging
 import hashlib
+import os
 
 class FilenamesDatabase():
     """
@@ -20,22 +21,26 @@ class FilenamesDatabase():
         logging.getLogger().setLevel(level=log_level or "ERROR")
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
-    def list_all_entries(self, db=None):
-        """ Return a listing of all keys in the database """
+    def return_all_entries(self, db=None):
+        """ Return a dict of the database """
 
         db = db or self.db
         db_connection = SqliteDict(db, autocommit=True, flag='r')
-        keys = list(dict(db_connection).keys())
+        entries = dict(db_connection)
         db_connection.close()
 
-        return keys
+        return entries
 
     def search(self, obj, exact=False, db=None):
         """
         Search the database for partial matches of [obj], and return a list of matches
         in the tuple form:
 
-        ("obj", {"filename_hash": string, "cryptographer": string, "storage_provider": string, "bucket": string})
+        ("obj", { "filename_hash": string,
+                  "cryptographer": string,
+                  "storage_provider": string,
+                  "bucket": string,
+                  "file_hash": string } )
 
         If [exact] == True, then only exact matches will be returned. Since there should
         only ever be a single exact match for a path in the DB, a CstashCriticalException
@@ -123,7 +128,9 @@ class FilenamesDatabase():
             "filename_hash": new_entry,
             "cryptographer": cryptographer,
             "storage_provider": storage_provider,
-            "bucket": bucket }
+            "bucket": bucket,
+            "file_hash": self.file_hash(obj),
+            "mtime": os.stat(obj).st_mtime }
         logging.debug("Wrote {} to database".format(db_connection[obj]))
 
         return { 'entry': new_entry, 'db_connection': db_connection }
