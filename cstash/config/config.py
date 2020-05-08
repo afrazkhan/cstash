@@ -9,7 +9,6 @@ import cstash.libs.exceptions as exceptions
 
 class Config():
     def __init__(self, cstash_directory, config_file="config.ini", log_level="ERROR"):
-        logging.getLogger().setLevel(log_level)
         self.config = configparser.ConfigParser()
         self.config_file = f"{cstash_directory}/{config_file}"
 

@@ -33,7 +33,6 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
     })
 
     log_level = ctx.obj.get('log_level')
-    logging.getLogger().setLevel(log_level)
     encryption = crypto.Encryption(cstash_directory, config["cryptographer"], log_level)
     filename_db = FilenamesDatabase(cstash_directory, log_level)
     paths = helpers.get_paths(filepath)
@@ -80,7 +79,6 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
         password = click.prompt("Password", hide_input=True)
 
     log_level = ctx.obj.get('log_level')
-    logging.getLogger().setLevel(log_level)
     cstash_directory = ctx.obj.get('cstash_directory')
     filename_db = FilenamesDatabase(cstash_directory, log_level)
     paths = helpers.get_paths(original_filepath)
@@ -152,7 +150,6 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
     })
 
     log_level = ctx.obj.get('log_level')
-    logging.getLogger().setLevel(log_level)
     encryption = crypto.Encryption(cstash_directory, config["cryptographer"], log_level)
 
     this_path = f"{cstash_directory}/filenames.sqlite"
@@ -184,7 +181,6 @@ def restore(ctx, cryptographer, storage_provider, bucket, ask_for_password):
         password = click.prompt("Password", hide_input=True)
 
     log_level = ctx.obj.get('log_level')
-    logging.getLogger().setLevel(log_level)
     cstash_directory = ctx.obj.get('cstash_directory')
     remote_filename = "filenames.sqlite.encrypted"
     temporary_file = helpers.get_paths(f"{cstash_directory}/filenames.sqlite.encrypted")[0]

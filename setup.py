@@ -20,7 +20,8 @@ setuptools.setup(
         'click',
         'sqlitedict',
         'python-gnupg',
-        'daemon'
+        'daemon',
+        'persist-queue'
         ],
     tests_require=[
         "coverage",

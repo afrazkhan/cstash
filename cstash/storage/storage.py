@@ -13,7 +13,6 @@ class Storage():
         if storage_provider == 's3':
             from cstash.storage.s3 import S3
             self.storage_provider = S3(log_level)
-            logging.getLogger().setLevel(log_level)
 
     def search(self, bucket, filename, storage_provider=None):
         """

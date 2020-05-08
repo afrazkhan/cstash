@@ -18,7 +18,6 @@ class FilenamesDatabase():
     def __init__(self, cstash_directory, log_level=None):
         """ Create the cstash SQLite DB """
 
-        logging.getLogger().setLevel(level=log_level or "ERROR")
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
     def return_all_entries(self, db=None):

@@ -24,7 +24,6 @@ def write(ctx, section, cryptographer, storage_provider, key, bucket):
     from cstash.config.config import Config
 
     log_level = ctx.obj.get('log_level')
-    logging.getLogger().setLevel(log_level)
 
     config = Config(ctx.obj.get('cstash_directory'))
     config.write(section=section, options={

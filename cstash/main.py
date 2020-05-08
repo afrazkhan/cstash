@@ -4,9 +4,7 @@ import click
 import os
 from cstash.config.config import Config
 from pathlib import Path
-from cstash.libs import helpers as helpers
-
-helpers.set_logger()
+from cstash.libs import helpers
 
 def create_cstash_directory():
     """ Ensure ~/.cstash directory exists and return it as a string """
@@ -27,6 +25,8 @@ def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory()
     This function does nothing by itself, and only creates the ctx object to pass down to all
     other commands
     """
+
+    helpers.set_logger(level=log_level)
 
     cstash_directory = create_cstash_directory()
     config = Config(cstash_directory).read()

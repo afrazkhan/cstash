@@ -1,3 +1,5 @@
+**NOTE: This is in no way ready for consumption, and is a work in progress**
+
 # Cstash
 
 A zero-knowledge file syncing solution.

@@ -12,8 +12,6 @@ class Encryption():
         self.cstash_directory = cstash_directory
 
         if cryptographer == 'gpg':
-            logging.getLogger().setLevel(log_level)
-
             from cstash.crypto.gpg import GPG
             self.encryptor = GPG(cstash_directory=cstash_directory,
                 log_level=log_level,
