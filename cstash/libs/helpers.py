@@ -11,10 +11,10 @@ def datetime_this_seconds_ago(duration):
 def seconds_from_hours(hours):
     return (60*60)*hours
 
-def set_logger(level='ERROR'):
-    """ Return a logging object set to [level], with some opinionated formatting """
+def set_logger(level='ERROR', filename=None):
+    """ Set logging level to [level], and some opinionated formatting """
 
-    return logging.basicConfig(level=level, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S%z')
+    logging.basicConfig(level=level, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S%z', filename=filename, filemode='w+')
 
 def get_paths(target):
     """

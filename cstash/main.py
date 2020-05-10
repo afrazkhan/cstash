@@ -26,7 +26,7 @@ def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory()
     other commands
     """
 
-    helpers.set_logger(level=log_level)
+    helpers.set_logger(level=log_level.upper(), filename=f"{cstash_directory}/cstash.log")
 
     cstash_directory = create_cstash_directory()
     config = Config(cstash_directory).read()
