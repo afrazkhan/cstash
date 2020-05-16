@@ -6,7 +6,7 @@ class CstashGeneralError(Exception):
 class CstashUpdateError(Exception):
     pass
 
-class CstashLoggingError(Exception):
+class CstashUploadError(Exception):
     def __init__(self, message=None):
         super().__init__(message)
         logging.error(message)
