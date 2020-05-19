@@ -91,15 +91,13 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
     log_level = ctx.obj.get('log_level')
     cstash_directory = ctx.obj.get('cstash_directory')
     filename_db = FilenamesDatabase(cstash_directory, log_level)
-    paths = helpers.get_paths(original_filepath)
+    paths = filename_db.search(original_filepath)
 
     for this_path in paths:
-        filename_db_mapping = filename_db.search(this_path, exact=True)
-
-        filename_hash = filename_db_mapping[0][1]['filename_hash']
-        cryptographer = filename_db_mapping[0][1]['cryptographer']
-        storage_provider = storage_provider or filename_db_mapping[0][1]['storage_provider']
-        bucket = filename_db_mapping[0][1]['bucket']
+        filename_hash = this_path[1]['filename_hash']
+        cryptographer = this_path[1]['cryptographer']
+        storage_provider = storage_provider or this_path[1]['storage_provider']
+        bucket = this_path[1]['bucket']
         logging.debug("Fetched {} {} from the database for {}".format(filename_hash, cryptographer, original_filepath))
 
         temporary_file = "{}/{}".format(cstash_directory, filename_hash)
@@ -110,8 +108,8 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
 
         encryption = crypto.Encryption(
             cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
-        encrypted_file_path = encryption.decrypt(temporary_file, this_path, password)
-        logging.debug('Decrypted {} to {}'.format(filename_db_mapping[0][0], encrypted_file_path))
+        encrypted_file_path = encryption.decrypt(temporary_file, this_path[0], password)
+        logging.debug('Decrypted {} to {}'.format(this_path, encrypted_file_path))
         helpers.delete_file(temporary_file)
 
 @click.group()
