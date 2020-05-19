@@ -1,14 +1,22 @@
+"""
+Helper methods that don't belong in classes
+"""
+
 from datetime import timedelta, timezone, datetime
-from time import strftime
 import logging
 import os
 import cstash.libs.exceptions as exceptions
 
-# Take a duration in seconds and work out the datetime value for the datetime at that date and time ago
+
 def datetime_this_seconds_ago(duration):
+    """
+    Work out the datetime [duraton] seconds ago, and return it
+    """
     return (datetime.now(timezone.utc) + timedelta(seconds=-duration))
 
 def seconds_from_hours(hours):
+    """ Return number of seconds equal to [hours] """
+
     return (60*60)*hours
 
 def set_logger(level='ERROR', filename=None):
@@ -29,8 +37,8 @@ def get_paths(target):
         file_listing = glob.glob("{}/**".format(full_path), recursive=True)
         file_listing.pop(0)
         return [ this_file for this_file in file_listing if os.path.isfile(this_file) ]
-    else:
-        return [full_path]
+
+    return [full_path]
 
 def recreate_directories(recreate_in, filepath):
     """
@@ -78,7 +86,7 @@ def clear_path(path):
             "directory instead of a file")
     if not os.path.exists(directories):
         os.makedirs(directories)
-    if os.path.isfile(f"{directories}/{filename}") == False:
+    if os.path.isfile(f"{directories}/{filename}") is False:
         return path
 
     new_path = path
@@ -114,7 +122,7 @@ def merge_dicts(dict_a, dict_b):
     dict_a.update( (k,v) for k,v in dict_b.items() if v is not None or (k not in dict_a))
 
     for k, v in dict_a.items():
-        if v == None:
+        if v is None:
             raise exceptions.CstashCriticalException(message=f"{k} was not given via command line " \
                 "options, or the configuration file")
 

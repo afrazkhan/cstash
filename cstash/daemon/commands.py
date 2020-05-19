@@ -1,3 +1,11 @@
+"""
+CLI commands for:
+
+    * cstash daemon start
+    * cstash daemon stop
+
+"""
+
 import click
 
 @click.group()

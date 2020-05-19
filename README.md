@@ -31,7 +31,7 @@ The CLI is fairly well documented with `--help`, but these are the basic operati
 # Set configuration so you don't need to pass options to the stash command every time
 cstash config -c gpg -s s3 -k [GPG KEY ID] -b [S3 BUCKET NAME]
 
-# Encrypt a file to GPG and stash it away in S3. You can override the values in your config by passing options to stash to mix and match cryptographers and remote storage providers
+# Encrypt a file to GPG and stash it away in S3. Note that you can override the values in your config by passing the options here again, allowing mixing and matching cryptographers, remote storage providers, keys, and buckets (--cryptographer, --storage-provider, --key, --bucket)
 cstash stash [FILE TO STASH]
 
 # Lookup stored files in the database
@@ -53,6 +53,7 @@ A lazy man's ticket list:
 
 * Add option to backup database after stashing a file too
 * Move db parameter to class initialisation instead of method calls for FilenamesDatabase()
+* `database search` should return a full listing on `--all` flag
 * Use click() native file handling (maybe?):
   * https://click.palletsprojects.com/en/7.x/arguments/#file-arguments
   * https://click.palletsprojects.com/en/7.x/arguments/#file-path-arguments

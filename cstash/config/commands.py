@@ -1,12 +1,13 @@
+"""
+CLI commands for 'cstash config'
+"""
+
 import click
-from cstash.libs import helpers
-from cstash.libs import exceptions as exceptions
-import logging
 
 @click.group()
 def config():
     """ Perform operations on the configuration file """
-    pass
+    pass # pylint: disable=unnecessary-pass
 
 @config.command()
 @click.pass_context
@@ -25,8 +26,8 @@ def write(ctx, section, cryptographer, storage_provider, key, bucket):
 
     log_level = ctx.obj.get('log_level')
 
-    config = Config(ctx.obj.get('cstash_directory'))
-    config.write(section=section, options={
+    config_class = Config(cstash_directory=ctx.obj.get('cstash_directory'), log_level=log_level)
+    config_class.write(section=section, options={
         "cryptographer": cryptographer,
         "storage_provider": storage_provider,
         "key": key,

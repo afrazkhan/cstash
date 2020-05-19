@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
-
-# Queues:  https://github.com/peter-wangxu/persist-queue
-# Threads: https://realpython.com/intro-to-python-threading/#starting-a-thread
+"""
+Create a background process which continually looks for changes in the files stashed
+with Cstash, and keep the configured remote storage for those files in sync
+"""
 
 import time
 import logging
@@ -13,11 +13,9 @@ import persistqueue
 import threading
 from cstash.crypto.filenames_database import FilenamesDatabase
 from cstash.crypto.commands import stash
-from cstash.libs import helpers
-from cstash.libs import exceptions
 
 class Daemon():
-    def __init__(self, cstash_directory, log_level, click_context):
+    def __init__(self, cstash_directory, log_level, click_context): # pylint: disable=unused-argument
         self.cstash_directory = cstash_directory
         self.log_file = open(f"{cstash_directory}/cstash.log", "w+")
         self.pid_file = f"{self.cstash_directory}/cstash-daemon.pid"
@@ -47,7 +45,7 @@ class Daemon():
             this_file = reprocess_queue.get()
             logging.info(f"{this_file} was received for the queue. It is now being sent for processing")
             stash.callback(None, None, None, None, True, this_file)
-            i+=1
+            i += 1
 
     def populate_queue(self):
         """
@@ -83,10 +81,10 @@ class Daemon():
                     self.populate_queue()
 
             with daemon.DaemonContext(
-                pidfile=daemon.pidfile.PIDLockFile(self.pid_file),
-                files_preserve=[logger.handlers[0].stream.fileno()],
-                stderr=self.log_file,
-                stdout=self.log_file
+                    pidfile=daemon.pidfile.PIDLockFile(self.pid_file),
+                    files_preserve=[logger.handlers[0].stream.fileno()],
+                    stderr=self.log_file,
+                    stdout=self.log_file
             ):
                 logging.info("Started cstash daemon")
 
@@ -114,4 +112,4 @@ class Daemon():
             os.remove(self.pid_file)
         except FileNotFoundError:
             logging.info(f"Pid file {self.pid_file} not found")
-            pass
+            pass # pylint: disable=unnecessary-pass

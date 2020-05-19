@@ -3,19 +3,22 @@ Calls the appropriate module to perform encryption tasks. At the moment
 only GnuPG is supported.
 """
 
-import logging
 import cstash.libs.helpers as helpers
 import cstash.libs.exceptions as cstash_exceptions
 
 class Encryption():
+    """
+    Abstraction class that passes requests down to chosen [cryptographer]
+    """
+
     def __init__(self, cstash_directory, cryptographer, log_level="ERROR", extra_args={}):
         self.cstash_directory = cstash_directory
 
         if cryptographer == 'gpg':
             from cstash.crypto.gpg import GPG
             self.encryptor = GPG(cstash_directory=cstash_directory,
-                log_level=log_level,
-                gnupg_home=extra_args.get("gnupg_home"))
+                                 log_level=log_level,
+                                 gnupg_home=extra_args.get("gnupg_home"))
 
     def encrypt(self, source_filepath, destination_filename, key):
         """
@@ -29,10 +32,10 @@ class Encryption():
 
         encrypted_filename = self.encryptor.encrypt(
             source_filepath=source_filepath, key=key, destination_filepath=encrypted_filepath)
-        if encrypted_filename != False:
+        if encrypted_filename is not False:
             return encrypted_filename
-        else:
-            raise cstash_exceptions.CstashCriticalException(message=encrypted_filename)
+
+        raise cstash_exceptions.CstashCriticalException(message=encrypted_filename)
 
     def decrypt(self, filepath, destination, password=None):
         """
@@ -43,7 +46,7 @@ class Encryption():
         """
 
         decrypted_filename = self.encryptor.decrypt(filepath, helpers.clear_path(destination), password)
-        if decrypted_filename != False:
+        if decrypted_filename is not False:
             return decrypted_filename
-        else:
-            raise cstash_exceptions.CstashCriticalException(message=decrypted_filename)
+
+        raise cstash_exceptions.CstashCriticalException(message=decrypted_filename)

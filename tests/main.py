@@ -1,3 +1,7 @@
+"""
+Wrapper to run all the tests
+"""
+
 #!/usr/bin/env python3
 
 import unittest

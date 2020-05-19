@@ -1,3 +1,7 @@
+"""
+Exceptions for Cstash
+"""
+
 import logging
 
 class CstashGeneralError(Exception):
@@ -16,4 +20,6 @@ class CstashCriticalException(Exception):
         super().__init__(message)
         logging.error(message)
 
-        exit(1)
+        import sys
+
+        sys.exit(1)

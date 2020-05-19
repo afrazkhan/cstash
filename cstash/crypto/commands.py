@@ -1,7 +1,17 @@
+"""
+CLI commands for:
+  * cstash stash
+  * cstash fetch
+  * cstash database
+    - search
+    - backup
+    - restore
+"""
+
 import click
 from cstash.libs import helpers
-from cstash.libs import exceptions as exceptions
 import logging
+from sys import exit as sys_exit
 
 # TODO: Declick the functions below for re-use
 # https://github.com/pallets/click/issues/40
@@ -40,10 +50,10 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
     for this_path in paths:
         file_stored = filename_db.existing_hash(this_path)
         # FIXME: There should be an additional AND comparison between the stored file_hash and the current file hash
-        if file_stored and force != True:
+        if file_stored and force is not True:
             print("This version of your file is already uploaded. Use -f to override and upload it again anyway")
-            exit(0)
-        if file_stored and force == True:
+            sys_exit(0)
+        if file_stored and force is True:
             logging.warning("Re-uploading existing file: {}".format(this_path))
 
         filename_db_mapping = filename_db.store(this_path, config["cryptographer"], config["storage_provider"], config["bucket"])
@@ -107,7 +117,7 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
 @click.group()
 def database():
     """ Perform operations on the local database """
-    pass
+    pass # pylint: disable=unnecessary-pass
 
 @database.command()
 @click.pass_context

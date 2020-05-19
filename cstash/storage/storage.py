@@ -49,7 +49,7 @@ class Storage():
         Return [destination] for success, or raise a CstashCriticalException on failure
         """
 
-        if destination != None and os.path.isdir(destination):
+        if destination is not None and os.path.isdir(destination):
             destination = f"{destination}/{filename}"
 
         destination = destination or f"{os.getcwd()}/{filename}"
@@ -59,7 +59,7 @@ class Storage():
 
         downloaded_object = self.storage_provider.download(bucket, filename, destination)
 
-        if downloaded_object == False:
+        if downloaded_object is False:
             raise exceptions.CstashCriticalException(message="Couldn't download {} from {}".format(filename, storage_provider))
 
         return downloaded_object

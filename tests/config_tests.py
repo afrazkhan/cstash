@@ -1,11 +1,13 @@
+"""
+Unit tests for the Config class
+"""
+
 #!/usr/bin/env python3
 
 import unittest
 import os
 import shutil
-import textwrap
 from cstash.config.config import Config
-from cstash.libs import helpers as helpers
 
 class TestConfigOperations(unittest.TestCase):
     """

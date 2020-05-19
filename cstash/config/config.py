@@ -3,12 +3,10 @@ Handle reading and writing Cstash configuration
 """
 
 import configparser
-import logging
 import os
-import cstash.libs.exceptions as exceptions
 
 class Config():
-    def __init__(self, cstash_directory, config_file="config.ini", log_level="ERROR"):
+    def __init__(self, cstash_directory, config_file="config.ini", log_level=None): # pylint: disable=unused-argument
         self.config = configparser.ConfigParser()
         self.config_file = f"{cstash_directory}/{config_file}"
 
@@ -20,8 +18,8 @@ class Config():
         self.config.read(self.config_file)
         if os.path.isfile(self.config_file):
             return dict(self.config[section])
-        else:
-            return None
+
+        return None
 
     def write(self, section="default", options={}):
         """
@@ -35,7 +33,7 @@ class Config():
             self.config.add_section(section)
 
         for k, v in options.items():
-            if v != None:
+            if v is not None:
                 self.config[section][k] = v
 
         with open(self.config_file, "+w") as config_file:

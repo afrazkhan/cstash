@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+"""
+Used to perform operations on the filenames database, which stores a mapping from the real filename
+to the hashed filename, and other metadata
+"""
+
 # -*- coding: utf-8 -*-
 
 from sqlitedict import SqliteDict
-import secrets
-from pathlib import Path
-import cstash.libs.helpers as helpers
 import cstash.libs.exceptions as exceptions
 import logging
 import hashlib
@@ -15,7 +16,7 @@ class FilenamesDatabase():
     Creates and manages filename obsfucation database
     """
 
-    def __init__(self, cstash_directory, log_level=None):
+    def __init__(self, cstash_directory, log_level=None): # pylint: disable=unused-argument
         """ Create the cstash SQLite DB """
         self.db = "{}/filenames.sqlite".format(cstash_directory)
 
@@ -55,7 +56,7 @@ class FilenamesDatabase():
 
         if exact is True and len(keys) > 1:
             raise exceptions.CstashCriticalException(message=(f"Found more than a single match "
-                  "for {obj} in the database:\n\n{keys}"))
+                "for {obj} in the database:\n\n{keys}")) # pylint: disable=bad-continuation
 
         db_connection.close()
 

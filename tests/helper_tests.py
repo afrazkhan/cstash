@@ -1,9 +1,13 @@
+"""
+Unit tests for the helper module
+"""
+
 #!/usr/bin/env python3
 
 import unittest
 import os
 import shutil
-from cstash.libs import helpers as helpers
+from cstash.libs import helpers
 
 class TestHelperOperations(unittest.TestCase):
     """

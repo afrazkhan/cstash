@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+"""
+Class for operations with the S3 API
+"""
 
 import boto3
 import logging
 import cstash.libs.helpers as helpers
-import os
 
 class S3():
-
-    def __init__(self, log_level=None):
+    def __init__(self, log_level=None): # pylint: disable=unused-argument
         self.s3_client = boto3.client('s3')
 
     def search(self, bucket=None, filename=None, s3_client=None):
@@ -20,11 +20,11 @@ class S3():
 
         s3_client = s3_client or self.s3_client
 
-        if bucket == None:
+        if bucket is None:
             print("Returning listing of buckets, since you didn't supply a bucket (see --help)\n")
             return self.list_buckets()
 
-        if filename == None:
+        if filename is None:
             print("Returning a listing of the bucket {} only, since you did not supply an object to search for (see --help)\n".format(bucket))
             return self.get_objects(bucket, s3_client)
 
@@ -56,7 +56,7 @@ class S3():
 
         all_objects = s3_client.list_objects_v2(Bucket=bucket)
         if 'Contents' in all_objects.keys():
-            all_objects = [ k['Key'] for k in [ obj for obj in all_objects['Contents'] ]]
+            all_objects = [ k['Key'] for k in [ obj for obj in all_objects['Contents'] ]] # pylint: disable=unnecessary-comprehension
         else:
             all_objects = []
 

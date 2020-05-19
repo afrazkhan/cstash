@@ -1,12 +1,15 @@
+"""
+Integration tests for everything
+"""
+
 #!/usr/bin/env python3
 
 import unittest
 import os
 import shutil
-from cstash.crypto import crypto as crypto
+from cstash.crypto import crypto
 import gnupg
 import boto3
-import cstash.libs.helpers as helpers
 from moto import mock_s3
 
 @mock_s3
@@ -129,7 +132,7 @@ class TestIntegrations(unittest.TestCase):
         6. Check the files are the same
         """
 
-        pass
+        return "TODO"
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,3 +1,7 @@
+"""
+Entry point for the CLI application
+"""
+
 #!/usr/bin/env python3
 
 import click

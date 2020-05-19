@@ -1,3 +1,7 @@
+"""
+Unit tests for the Filenames class
+"""
+
 #!/usr/bin/env python3
 
 import unittest
@@ -95,12 +99,12 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
             with self.subTest(name=name):
                 result = files_db.search(obj=this_path, exact=exact)
                 self.assertTrue(result == [(
-                        this_path,
-                        {
-                            "filename_hash": this_hash,
-                            "cryptographer": self.dummy_cryptographer,
-                            "bucket": self.dummy_bucket_name
-                        }
+                    this_path,
+                    {
+                        "filename_hash": this_hash,
+                        "cryptographer": self.dummy_cryptographer,
+                        "bucket": self.dummy_bucket_name
+                    }
                     )])
 
     def test_search_non_existent_record(self):
@@ -170,8 +174,8 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         search_result = files_db.search(obj=self.single_directory_file_path, exact=True)
 
         self.assertTrue(store_result["entry"] == search_result[0][1]["filename_hash"],
-            msg=f"store_result = {store_result}\n" \
-                f"search_result = {search_result}")
+                        msg=f"store_result = {store_result}\n" \
+                        f"search_result = {search_result}")
 
         # Calculate the file hash ourselves, to check it with what's stored
         sha256 = hashlib.sha256()

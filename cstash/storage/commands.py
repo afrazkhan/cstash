@@ -1,12 +1,14 @@
+"""
+CLI methods for the storage command
+"""
+
 import click
-from cstash.libs import helpers
 from cstash.libs.exceptions import CstashCriticalException
-import logging
 
 @click.group()
 def storage():
     """ Perform operations on the backend storage """
-    pass
+    pass # pylint: disable=unnecessary-pass
 
 @storage.command()
 @click.pass_context
@@ -16,10 +18,10 @@ def storage():
 def search(ctx, bucket=None, filename=None, storage_provider=None):
     """ Search the [bucket] on [storage_provider] for [filename] """
 
-    from cstash.storage import storage
+    from cstash.storage import storage as storage_obj
 
-    if bucket == None and filename != None:
+    if bucket is None and filename is not None:
         raise CstashCriticalException(message="When searching for a file, you must specify a bucket")
 
-    storage = storage.Storage(storage_provider, ctx.obj.get('log_level'))
+    storage_obj = storage.Storage(storage_provider, ctx.obj.get('log_level'))
     print(storage.search(bucket=bucket, filename=filename, storage_provider=storage_provider))
