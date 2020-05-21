@@ -58,7 +58,6 @@ A lazy man's ticket list:
 
 ### Normal
 
-* Handle config not existing
 * Add option to backup database after stashing a file too
 * `database search` should return a full listing on `--all` flag
 * Implement `cstash database delete [entry]` and `cstash storage delete [object]`

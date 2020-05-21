@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
+
 """
 Unit tests for the helper module
 """
-
-#!/usr/bin/env python3
 
 import unittest
 import os

@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
+
 """
 Unit tests for the Filenames class
 """
-
-#!/usr/bin/env python3
 
 import unittest
 from sqlitedict import SqliteDict
@@ -25,6 +25,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         self.dummy_filename = "/home/dummy_user/dummy_filename"
         self.dummy_filename_hash = "dummy_filename_hash"
         self.dummy_cryptographer = "dummy_cryptographer"
+        self.dummy_key = "dummy_key"
         self.dummy_bucket_name = "dummy_bucket"
         self.two_directory_tieres = f"{self.test_files_directory}/one/two"
         self.single_file = "foobar.txt"
@@ -147,6 +148,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         result = files_db.store(
             obj=self.single_directory_file_path,
             cryptographer=self.dummy_cryptographer,
+            key=self.dummy_key,
             storage_provider=self.storage_provider,
             bucket=self.dummy_bucket_name
         )
@@ -167,6 +169,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         store_result = files_db.store(
             obj=self.single_directory_file_path,
             cryptographer=self.dummy_cryptographer,
+            key=self.dummy_key,
             storage_provider=self.storage_provider,
             bucket=self.dummy_bucket_name
         )

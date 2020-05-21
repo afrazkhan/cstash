@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
+
 """
 Integration tests for everything
 """
-
-#!/usr/bin/env python3
 
 import unittest
 import os
@@ -82,7 +82,10 @@ class TestIntegrations(unittest.TestCase):
         """ Delete test fixture files """
 
         shutil.rmtree(self.test_files_directory)
-        # TODO: Also remove self.single_file from when it gets created in the CWD
+        try:
+            os.remove(f"{os.path.curdir}/foobar.txt")
+        except OSError:
+            pass
 
     def test_encrypt_decrypt(self):
         """
@@ -100,6 +103,7 @@ class TestIntegrations(unittest.TestCase):
                 decrypted_file = encryption.decrypt(
                     filepath=f"{source_file}.gpg",
                     destination=f"{source_file}_decrypted",
+                    key=key,
                     password=self.gpg_password)
                 decrypted_file_contents = open(decrypted_file, "r").read()
 

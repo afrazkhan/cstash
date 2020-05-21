@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
+
 """
 Unit tests for the Config class
 """
-
-#!/usr/bin/env python3
 
 import unittest
 import os
