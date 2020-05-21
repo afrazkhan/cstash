@@ -59,6 +59,7 @@ A lazy man's ticket list:
 ### Normal
 
 * Add option to backup database after stashing a file too
+* Store temporary files in `~/.cstash/temp/` instead of `~/.cstash/`
 * `database search` should return a full listing on `--all` flag
 * Implement `cstash database delete [entry]` and `cstash storage delete [object]`
 * Implement Python native encryption

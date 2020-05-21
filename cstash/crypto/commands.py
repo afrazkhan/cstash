@@ -56,7 +56,7 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
         if file_stored and force is True:
             logging.warning("Re-uploading existing file: {}".format(this_path))
 
-        filename_db_mapping = filename_db.store(this_path, config["cryptographer"], key, config["storage_provider"], config["bucket"])
+        filename_db_mapping = filename_db.store(this_path, config["cryptographer"], config['key'], config["storage_provider"], config["bucket"])
         logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 
         encrypted_file_path = encryption.encrypt(
@@ -112,6 +112,7 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
         encrypted_file_path = encryption.decrypt(temporary_file, this_path[0], key, password)
         logging.debug('Decrypted {} to {}'.format(this_path, encrypted_file_path))
         helpers.delete_file(temporary_file)
+        print(f"Successfully retrieved and decrypted {this_path[0]}")
 
 @click.group()
 def database():
