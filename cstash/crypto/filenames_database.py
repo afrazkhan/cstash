@@ -37,6 +37,7 @@ class FilenamesDatabase():
 
         ("obj", { "filename_hash": string,
                   "cryptographer": string,
+                  "key": string,
                   "storage_provider": string,
                   "bucket": string,
                   "file_hash": string } )
@@ -51,6 +52,8 @@ class FilenamesDatabase():
         db_connection = SqliteDict(db, autocommit=True, flag='r')
         if exact is True:
             keys = [(k, db_connection[k]) for k in db_connection.keys() if obj == k]
+        elif obj is None:
+            keys = [(k, db_connection[k]) for k in db_connection.keys()]
         else:
             keys = [(k, db_connection[k]) for k in db_connection.keys() if obj in k]
 

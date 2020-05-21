@@ -121,9 +121,12 @@ def database():
 
 @database.command()
 @click.pass_context
-@click.argument('filename')
+@click.argument('filename', required=False)
 def search(ctx, filename):
-    """ Search the local database for [filename]. Matches in any path will be returned """
+    """
+    Search the local database for [filename]. Matches in any path will be returned. All entries
+    in the database will be returned if [filename] is omitted
+    """
 
     log_level = ctx.obj.get('log_level')
 
