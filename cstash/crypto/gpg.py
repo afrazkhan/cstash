@@ -27,7 +27,7 @@ class GPG():
 
         return destination_filepath
 
-    def decrypt(self, filepath, destination, password=None):
+    def decrypt(self, filepath, destination, key, password=None): # pylint: disable=unused-argument
         """
         Decrypt [filepath] to [destination], and return the path to the decrypted file
         on success, or False on failure

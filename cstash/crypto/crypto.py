@@ -20,6 +20,11 @@ class Encryption():
                                  log_level=log_level,
                                  gnupg_home=extra_args.get("gnupg_home"))
 
+        if cryptographer == 'python':
+            from cstash.crypto.pcrypt import PCrypt
+            self.encryptor = PCrypt(cstash_directory=cstash_directory,
+                                    log_level=log_level)
+
     def encrypt(self, source_filepath, destination_filename, key):
         """
         Encrypt [source_filepath] into the [cstash_directory] as [destination_filename] using [key].
@@ -37,7 +42,7 @@ class Encryption():
 
         raise cstash_exceptions.CstashCriticalException(message=encrypted_filename)
 
-    def decrypt(self, filepath, destination, password=None):
+    def decrypt(self, filepath, destination, key, password=None):
         """
         Decrypt [filepath] to [destination]
 
@@ -45,7 +50,7 @@ class Encryption():
         CstashCriticalException
         """
 
-        decrypted_filename = self.encryptor.decrypt(filepath, helpers.clear_path(destination), password)
+        decrypted_filename = self.encryptor.decrypt(filepath, helpers.clear_path(destination), key, password)
         if decrypted_filename is not False:
             return decrypted_filename
 

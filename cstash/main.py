@@ -9,6 +9,7 @@ import os
 from cstash.config.config import Config
 from pathlib import Path
 from cstash.libs import helpers
+import logging
 
 def create_cstash_directory():
     """ Ensure ~/.cstash directory exists and return it as a string """
@@ -25,17 +26,32 @@ def create_cstash_directory():
 def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory(),):
     """
     Stash and fetch encrypted versions of your files to your choice of storage providers
-
-    This function does nothing by itself, and only creates the ctx object to pass down to all
-    other commands
     """
+    # This function does nothing by itself, and only creates the ctx object to pass down to all
+    # other commands
 
     helpers.set_logger(level=log_level.upper(), filename=f"{cstash_directory}/cstash.log")
+    logger = logging.getLogger()
+    console_handler = logging.StreamHandler()
+    console_formatter = logging.Formatter('%(message)s')
+    console_handler.setFormatter(console_formatter)
+    logger.addHandler(console_handler)
 
     cstash_directory = create_cstash_directory()
     config = Config(cstash_directory).read()
 
     ctx.obj = {'log_level': log_level.upper(), 'cstash_directory': cstash_directory, 'config': config}
+
+@main.command()
+@click.pass_context
+def initialise(ctx):
+    """ Initialise a default key, which is necessary for the database backup """
+
+    from cstash.crypto.pcrypt import PCrypt
+    encryptor = PCrypt(cstash_directory=ctx.obj.get("cstash_directory"),
+                       log_level=ctx.obj.get("log_level"))
+
+    encryptor.generate_key("default")
 
 from cstash.storage.commands import storage as storage_commands
 main.add_command(storage_commands)

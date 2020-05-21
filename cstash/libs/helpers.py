@@ -19,7 +19,7 @@ def seconds_from_hours(hours):
 
     return (60*60)*hours
 
-def set_logger(level='ERROR', filename=None):
+def set_logger(level='INFO', filename=None):
     """ Set logging level to [level], and some opinionated formatting """
 
     logging.basicConfig(level=level, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S%z', filename=filename, filemode='w+')
@@ -32,11 +32,15 @@ def get_paths(target):
     """
 
     full_path = os.path.abspath(target)
+
     if os.path.isdir(full_path):
         import glob
         file_listing = glob.glob("{}/**".format(full_path), recursive=True)
         file_listing.pop(0)
         return [ this_file for this_file in file_listing if os.path.isfile(this_file) ]
+
+    if not os.path.isfile(full_path):
+        raise exceptions.CstashCriticalException(message="File does not exist")
 
     return [full_path]
 

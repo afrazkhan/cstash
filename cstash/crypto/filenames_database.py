@@ -108,7 +108,7 @@ class FilenamesDatabase():
 
         return False
 
-    def store(self, obj, cryptographer, storage_provider, bucket, db=None):
+    def store(self, obj, cryptographer, key, storage_provider, bucket, db=None):
         """
         Create or overwrite an entry in the filenames [db] for mapping [obj] to an obsfucated name.
 
@@ -126,6 +126,7 @@ class FilenamesDatabase():
         db_connection[obj] = {
             "filename_hash": new_entry,
             "cryptographer": cryptographer,
+            "key": key,
             "storage_provider": storage_provider,
             "bucket": bucket,
             "file_hash": self.file_hash(obj),

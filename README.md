@@ -51,12 +51,16 @@ cstash daemon start
 
 A lazy man's ticket list:
 
+### Urgent
+
+* Fix tests now that the DB entries include 'key'
+* Fix backup and restore of database, now that 'key' is needed in Encryption.decrypt()
+
+### Normal
+
+* Handle config not existing
 * Add option to backup database after stashing a file too
-* Move db parameter to class initialisation instead of method calls for FilenamesDatabase()
 * `database search` should return a full listing on `--all` flag
-* Use click() native file handling (maybe?):
-  * https://click.palletsprojects.com/en/7.x/arguments/#file-arguments
-  * https://click.palletsprojects.com/en/7.x/arguments/#file-path-arguments
 * Implement `cstash database delete [entry]` and `cstash storage delete [object]`
 * Implement Python native encryption
 * Implement Google Cloud storage

@@ -18,9 +18,9 @@ from sys import exit as sys_exit
 
 @click.command()
 @click.pass_context
-@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported')
+@click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported')
+@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='The object storage provider to use')
 @click.option('--bucket', '-b', help='Bucket to push objects to')
 @click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
 @click.argument('filepath', metavar='filename')
@@ -56,7 +56,7 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
         if file_stored and force is True:
             logging.warning("Re-uploading existing file: {}".format(this_path))
 
-        filename_db_mapping = filename_db.store(this_path, config["cryptographer"], config["storage_provider"], config["bucket"])
+        filename_db_mapping = filename_db.store(this_path, config["cryptographer"], key, config["storage_provider"], config["bucket"])
         logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 
         encrypted_file_path = encryption.encrypt(
@@ -68,12 +68,12 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
 
         logging.debug('Everything went fine, closing the DB connection')
         filename_db.close_db_connection(filename_db_mapping['db_connection'])
-        print("File {} successfully uploaded".format(this_path))
+        print(f"File {this_path} successfully uploaded")
         helpers.delete_file(encrypted_file_path)
 
 @click.command()
 @click.pass_context
-@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Override the object storage provider where the object is stored. Currently only the default option of S3 is supported.')
+@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Override the object storage provider where the object is stored')
 @click.option('--bucket', '-b', help='Override the known bucket for objects to be fetched')
 @click.option('--ask-for-password', '-a', is_flag=True, help='Whether to ask for a password to decrypt the files with')
 @click.argument('original-filepath')
@@ -96,6 +96,7 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
     for this_path in paths:
         filename_hash = this_path[1]['filename_hash']
         cryptographer = this_path[1]['cryptographer']
+        key = this_path[1]['key']
         storage_provider = storage_provider or this_path[1]['storage_provider']
         bucket = this_path[1]['bucket']
         logging.debug("Fetched {} {} from the database for {}".format(filename_hash, cryptographer, original_filepath))
@@ -108,7 +109,7 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
 
         encryption = crypto.Encryption(
             cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
-        encrypted_file_path = encryption.decrypt(temporary_file, this_path[0], password)
+        encrypted_file_path = encryption.decrypt(temporary_file, this_path[0], key, password)
         logging.debug('Decrypted {} to {}'.format(this_path, encrypted_file_path))
         helpers.delete_file(temporary_file)
 
@@ -136,9 +137,9 @@ def search(ctx, filename):
 
 @database.command()
 @click.pass_context
-@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported')
+@click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported')
+@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='The object storage provider to use')
 @click.option('--bucket', '-b', help='Bucket to push objects to')
 def backup(ctx, cryptographer, key, storage_provider, bucket):
     """ Encrypt and backup local database to remote storage """
@@ -169,35 +170,41 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
     Storage(config["storage_provider"], log_level=log_level).upload(config["bucket"], encrypted_file_path)
     logging.debug('Uploaded {} to {}'.format(f"{this_path}.encrypted", config["storage_provider"]))
 
-    print("File {} successfully uploaded".format(this_path))
+    print(f"File {this_path} successfully uploaded")
     helpers.delete_file(encrypted_file_path)
 
 @database.command()
 @click.pass_context
-@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='Encryption that was used for the database file')
-@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='Which storage backend was used to upload the database file')
+@click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
+@click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
+@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Which storage backend was used to upload the database file')
 @click.option('--bucket', '-b', required=True, help='Which bucket the database file was uploaded to')
-@click.option('--ask-for-password', '-a', is_flag=True, help='Whether to ask for a password to decrypt the files with')
-def restore(ctx, cryptographer, storage_provider, bucket, ask_for_password):
+def restore(ctx, cryptographer, key, storage_provider, bucket):
     """ Restore the database file from a backup in storage """
+
+    # Override options retrieved from the config file, by those from the command line
+    config = ctx.obj.get('config')
+    helpers.merge_dicts(config, {
+        "cryptographer": cryptographer,
+        "storage_provider": storage_provider,
+        "key": key,
+        "bucket": bucket
+    })
 
     from cstash.crypto import crypto
     from cstash.storage.storage import Storage
-
-    password = None
-    if ask_for_password:
-        password = click.prompt("Password", hide_input=True)
 
     log_level = ctx.obj.get('log_level')
     cstash_directory = ctx.obj.get('cstash_directory')
     remote_filename = "filenames.sqlite.encrypted"
     temporary_file = helpers.get_paths(f"{cstash_directory}/filenames.sqlite.encrypted")[0]
 
-    storage = Storage(storage_provider, log_level=log_level)
-    storage.download(bucket, remote_filename, temporary_file)
+    storage = Storage(config['storage_provider'], log_level=log_level)
+    storage.download(config['bucket'], remote_filename, temporary_file)
     logging.debug('Downloaded {} from {}'.format(remote_filename, storage_provider))
 
     encryption = crypto.Encryption(
-        cstash_directory=cstash_directory, cryptographer=cryptographer, log_level=log_level)
-    encryption.decrypt(temporary_file, f"{cstash_directory}/filenames.sqlite", password)
+        cstash_directory=cstash_directory, cryptographer=config['cryptographer'], log_level=log_level)
+    encryption.decrypt(temporary_file, f"{cstash_directory}/filenames.sqlite", config['key'])
     helpers.delete_file(temporary_file)
+    print("Successfully restored the database file")

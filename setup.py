@@ -23,7 +23,8 @@ setuptools.setup(
         'sqlitedict',
         'python-gnupg',
         'daemon',
-        'persist-queue'
+        'persist-queue',
+        'cryptography'
         ],
     tests_require=[
         "coverage",

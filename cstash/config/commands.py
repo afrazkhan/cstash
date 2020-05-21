@@ -12,7 +12,7 @@ def config():
 @config.command()
 @click.pass_context
 @click.option('--section', '-n', default='default', type=click.Choice(['default']), help='The section of the configruation file to set. Defaults to "default"')
-@click.option('--cryptographer', '-c', default='gpg', type=click.Choice(['gpg']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
+@click.option('--cryptographer', '-c', default='python', type=click.Choice(['gpg', 'python']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
 @click.option('--bucket', '-b', help='Override the known bucket for objects to be fetched')

@@ -12,14 +12,20 @@ class Config():
 
     def read(self, section="default"):
         """
-        Read [section] from self.config_file and return it. Return None if there is no config file
+        Read [section] from self.config_file and return it. Return a complete dictionary of
+        keys with None values if there is no config file
         """
 
         self.config.read(self.config_file)
         if os.path.isfile(self.config_file):
             return dict(self.config[section])
 
-        return None
+        return {
+            "cryptographer": None,
+            "storage_provider": None,
+            "key": None,
+            "bucket": None
+        }
 
     def write(self, section="default", options={}):
         """
