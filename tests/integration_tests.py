@@ -9,6 +9,8 @@ import os
 import shutil
 from cstash.crypto import crypto
 import gnupg
+# import cryptography
+from cryptography.fernet import Fernet
 import boto3
 from moto import mock_s3
 
@@ -73,9 +75,11 @@ class TestIntegrations(unittest.TestCase):
             gpg_configuration.close()
 
         gpg_key_id = f"{self.gpg.gen_key(self.gpg.gen_key_input(passphrase=self.gpg_password))}"
+        fernet_key = Fernet.generate_key()
 
         self.encryption_cases = {
-            "gpg_single_file": ("gpg", self.single_directory_file_path, gpg_key_id)
+            "gpg_single_file": ("gpg", self.single_directory_file_path, gpg_key_id, {"gnupg_home": self.gnupg_home}),
+            "pcrypt_single_file": ("python", self.single_directory_file_path, fernet_key, None)
         }
 
     def tearDown(self):
@@ -92,16 +96,17 @@ class TestIntegrations(unittest.TestCase):
         Test encrypt() and decrypt() with all our cryptographers
         """
 
-        for name, (cryptographer, source_file, key) in self.encryption_cases.items():
+        for name, (cryptographer, source_file, key, extra_args) in self.encryption_cases.items():
             with self.subTest(name=name):
                 encryption = crypto.Encryption(
                     cstash_directory=self.test_files_directory,
                     cryptographer=cryptographer,
-                    extra_args={"gnupg_home": self.gnupg_home})
-                encryption.encrypt(source_file, f"{os.path.split(source_file)[1]}.gpg", key)
+                    extra_args=extra_args)
+
+                encryption.encrypt(source_file, f"{os.path.split(source_file)[1]}_encrypted", key)
 
                 decrypted_file = encryption.decrypt(
-                    filepath=f"{source_file}.gpg",
+                    filepath=f"{source_file}_encrypted",
                     destination=f"{source_file}_decrypted",
                     key=key,
                     password=self.gpg_password)

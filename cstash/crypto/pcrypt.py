@@ -89,8 +89,8 @@ class PCrypt():
             decrypted_contents = fernet.decrypt(contents.encode())
 
             destination_file = destination or f"{filepath}.decrypted"
-            with open(destination, "wb+") as destination_file:
-                destination_file.write(decrypted_contents)
+            with open(destination, "wb+") as destination_f:
+                destination_f.write(decrypted_contents)
 
         except Exception as e:
             os.remove(destination_file)
