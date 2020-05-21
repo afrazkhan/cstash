@@ -41,6 +41,9 @@ class PCrypt():
         had to be generated, also write it to [self.key_directory]/[key_name]
         """
 
+        # FIXME: This should only happen in main.initialise(), and the below should be
+        #        changed to a try/except block of trying to open the key file, and moved
+        #        to __init__.self.fernet_key
         if not os.path.isfile(f"{self.keys_directory}/{key_name}"):
             fernet_key = self.generate_key(key_name)
         else:
@@ -86,10 +89,11 @@ class PCrypt():
             decrypted_contents = fernet.decrypt(contents.encode())
 
             destination_file = destination or f"{filepath}.decrypted"
-            with open(destination, "w+") as destination_file:
-                destination_file.write(decrypted_contents.decode())
+            with open(destination, "wb+") as destination_file:
+                destination_file.write(decrypted_contents)
 
         except Exception as e:
+            os.remove(destination_file)
             logging.error("Coudln't decrypt {}: {}".format(filepath, e))
             return False
 

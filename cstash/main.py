@@ -26,9 +26,11 @@ def create_cstash_directory():
 def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory(),):
     """
     Stash and fetch encrypted versions of your files to your choice of storage providers
+    \f
+
+    This function does nothing by itself, and only creates the ctx object to pass down to all
+    other commands
     """
-    # This function does nothing by itself, and only creates the ctx object to pass down to all
-    # other commands
 
     helpers.set_logger(level=log_level.upper(), filename=f"{cstash_directory}/cstash.log")
     logger = logging.getLogger()

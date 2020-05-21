@@ -179,7 +179,7 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
 @click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
 @click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Which storage backend was used to upload the database file')
-@click.option('--bucket', '-b', required=True, help='Which bucket the database file was uploaded to')
+@click.option('--bucket', '-b', help='Which bucket the database file was uploaded to')
 def restore(ctx, cryptographer, key, storage_provider, bucket):
     """ Restore the database file from a backup in storage """
 
@@ -198,7 +198,7 @@ def restore(ctx, cryptographer, key, storage_provider, bucket):
     log_level = ctx.obj.get('log_level')
     cstash_directory = ctx.obj.get('cstash_directory')
     remote_filename = "filenames.sqlite.encrypted"
-    temporary_file = helpers.get_paths(f"{cstash_directory}/filenames.sqlite.encrypted")[0]
+    temporary_file = f"{cstash_directory}/filenames.sqlite.encrypted"
 
     storage = Storage(config['storage_provider'], log_level=log_level)
     storage.download(config['bucket'], remote_filename, temporary_file)

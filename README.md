@@ -51,13 +51,6 @@ cstash daemon start
 
 A lazy man's ticket list:
 
-### Urgent
-
-* Fix tests now that the DB entries include 'key'
-* Fix backup and restore of database, now that 'key' is needed in Encryption.decrypt()
-
-### Normal
-
 * Add option to backup database after stashing a file too
 * Store temporary files in `~/.cstash/temp/` instead of `~/.cstash/`
 * `database search` should return a full listing on `--all` flag
