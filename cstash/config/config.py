@@ -4,6 +4,7 @@ Handle reading and writing Cstash configuration
 
 import configparser
 import os
+import logging
 
 class Config():
     def __init__(self, cstash_directory, config_file="config.ini", log_level=None): # pylint: disable=unused-argument
@@ -17,12 +18,21 @@ class Config():
         """
 
         self.config.read(self.config_file)
-        if os.path.isfile(self.config_file):
-            return dict(self.config[section])
+        try:
+            if os.path.isfile(self.config_file):
+                return dict(self.config[section])
+        except KeyError:
+            logging.info(f"A profile for {section} did not exist. Creating it now")
+            self.config.add_section(section)
+            with open(self.config_file, "+w") as config_file:
+                self.config.write(config_file)
 
         return {
             "cryptographer": None,
             "storage_provider": None,
+            "s3_endpoint_url": None,
+            "s3_access_key": None,
+            "s3_secret_access_key": None,
             "key": None,
             "bucket": None
         }
@@ -44,3 +54,4 @@ class Config():
 
         with open(self.config_file, "+w") as config_file:
             self.config.write(config_file)
+        os.chmod(self.config_file, 0o600)

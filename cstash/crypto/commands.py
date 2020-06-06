@@ -20,11 +20,13 @@ from sys import exit as sys_exit
 @click.pass_context
 @click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='The object storage provider to use')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use')
+@click.option('--s3-endpoint-url', '-e', help='Used for other S3 compatible providers — e.g. https://ams3.digitaloceanspaces.com')
+@click.option('--ask-for-s3-credentials', '-a', is_flag=True, help="Prompt for access key ID and secret to be used with S3 compatible provider")
 @click.option('--bucket', '-b', help='Bucket to push objects to')
 @click.option('--force', '-f', is_flag=True, default=False, help='Force re-upload of already stored file')
 @click.argument('filepath', metavar='filename')
-def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
+def stash(ctx, cryptographer, key, storage_provider, s3_endpoint_url, ask_for_s3_credentials, bucket, force, filepath):
     """ Encrypt, and upload objects to remote storage under hashed filenames """
 
     from cstash.crypto import crypto
@@ -33,11 +35,21 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
 
     cstash_directory = ctx.obj.get('cstash_directory')
 
+    s3_access_key_id = None
+    s3_secret_access_key = None
+    if ask_for_s3_credentials:
+        print("Input will not be visible\n")
+        s3_access_key_id = click.prompt("S3 Access Key", hide_input=True)
+        s3_secret_access_key = click.prompt("S3 Secret Access Key", hide_input=True)
+
     # Override options retrieved from the config file, by those from the command line
     config = ctx.obj.get('config')
     helpers.merge_dicts(config, {
         "cryptographer": cryptographer,
         "storage_provider": storage_provider,
+        "s3_endpoint_url": s3_endpoint_url,
+        "s3_access_key_id": s3_access_key_id,
+        "s3_secret_access_key": s3_secret_access_key,
         "key": key,
         "bucket": bucket
     })
@@ -56,14 +68,27 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
         if file_stored and force is True:
             logging.warning("Re-uploading existing file: {}".format(this_path))
 
-        filename_db_mapping = filename_db.store(this_path, config["cryptographer"], config['key'], config["storage_provider"], config["bucket"])
+        filename_db_mapping = filename_db.store(
+            obj=this_path,
+            cryptographer=config["cryptographer"],
+            key=config['key'],
+            storage_provider=config["storage_provider"],
+            s3_endpoint_url=config["s3_endpoint_url"],
+            bucket=config["bucket"])
         logging.debug('Updated the local database with an entry for filename mapped to the obsfucated name')
 
         encrypted_file_path = encryption.encrypt(
             source_filepath=this_path, destination_filename=filename_db_mapping['entry'], key=config["key"])
         logging.debug('Encrypted {} to {}'.format(this_path, filename_db_mapping['entry']))
 
-        Storage(config["storage_provider"], log_level=log_level).upload(config["bucket"], encrypted_file_path)
+        storage = Storage(
+            storage_provider=config["storage_provider"],
+            log_level=log_level,
+            s3_endpoint_url=config['s3_endpoint_url'],
+            s3_access_key_id=config['s3_access_key_id'],
+            s3_secret_access_key=config['s3_secret_access_key']
+        )
+        storage.upload(config["bucket"], encrypted_file_path)
         logging.debug('Uploaded {} to {}'.format(filename_db_mapping['entry'], config["storage_provider"]))
 
         logging.debug('Everything went fine, closing the DB connection')
@@ -73,11 +98,12 @@ def stash(ctx, cryptographer, key, storage_provider, bucket, force, filepath):
 
 @click.command()
 @click.pass_context
-@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Override the object storage provider where the object is stored')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='Override the object storage provider where the object is stored')
+@click.option('--s3-endpoint-url', '-e', help='Used for other S3 compatible providers — e.g. https://ams3.digitaloceanspaces.com')
 @click.option('--bucket', '-b', help='Override the known bucket for objects to be fetched')
 @click.option('--ask-for-password', '-a', is_flag=True, help='Whether to ask for a password to decrypt the files with')
 @click.argument('original-filepath')
-def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
+def fetch(ctx, storage_provider, s3_endpoint_url, bucket, ask_for_password, original_filepath):
     """ Fetch encrypted files from remote storage and decrypt them """
 
     from cstash.crypto import crypto
@@ -87,6 +113,10 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
     password = None
     if ask_for_password:
         password = click.prompt("Password", hide_input=True)
+
+    config = ctx.obj.get('config')
+    s3_access_key_id = config['s3_access_key_id']
+    s3_secret_access_key = config['s3_secret_access_key']
 
     log_level = ctx.obj.get('log_level')
     cstash_directory = ctx.obj.get('cstash_directory')
@@ -98,12 +128,19 @@ def fetch(ctx, storage_provider, bucket, ask_for_password, original_filepath):
         cryptographer = this_path[1]['cryptographer']
         key = this_path[1]['key']
         storage_provider = storage_provider or this_path[1]['storage_provider']
+        s3_endpoint_url = this_path[1]['s3_endpoint_url']
         bucket = this_path[1]['bucket']
         logging.debug("Fetched {} {} from the database for {}".format(filename_hash, cryptographer, original_filepath))
 
         temporary_file = "{}/{}".format(cstash_directory, filename_hash)
 
-        storage = Storage(storage_provider, log_level=log_level)
+        storage = Storage(
+            storage_provider,
+            log_level=log_level,
+            s3_endpoint_url=s3_endpoint_url,
+            s3_access_key_id=s3_access_key_id,
+            s3_secret_access_key=s3_secret_access_key
+        )
         storage.download(bucket, filename_hash, temporary_file)
         logging.debug('Downloaded {} from {}'.format(filename_hash, storage_provider))
 
@@ -143,9 +180,11 @@ def search(ctx, filename):
 @click.pass_context
 @click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='The object storage provider to use')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use')
+@click.option('--ask-for-s3-credentials', '-a', is_flag=True, help="Prompt for access key ID and secret to be used with S3 compatible provider")
+@click.option('--s3-endpoint-url', '-e', help='Used for other S3 compatible providers — e.g. https://ams3.digitaloceanspaces.com')
 @click.option('--bucket', '-b', help='Bucket to push objects to')
-def backup(ctx, cryptographer, key, storage_provider, bucket):
+def backup(ctx, cryptographer, key, storage_provider, ask_for_s3_credentials, s3_endpoint_url, bucket):
     """ Encrypt and backup local database to remote storage """
 
     from cstash.crypto import crypto
@@ -153,11 +192,21 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
 
     cstash_directory = ctx.obj.get('cstash_directory')
 
+    s3_access_key_id = None
+    s3_secret_access_key = None
+    if ask_for_s3_credentials:
+        print("Input will not be visible\n")
+        s3_access_key_id = click.prompt("S3 Access Key", hide_input=True)
+        s3_secret_access_key = click.prompt("S3 Secret Access Key", hide_input=True)
+
     # Override options retrieved from the config file, by those from the command line
     config = ctx.obj.get('config')
     helpers.merge_dicts(config, {
         "cryptographer": cryptographer,
         "storage_provider": storage_provider,
+        "s3_endpoint_url": s3_endpoint_url,
+        "s3_access_key_id": s3_access_key_id,
+        "s3_secret_access_key": s3_secret_access_key,
         "key": key,
         "bucket": bucket
     })
@@ -171,7 +220,15 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
         source_filepath=this_path, destination_filename="filenames.sqlite.encrypted", key=config["key"])
     logging.debug('Encrypted {} to {}'.format(this_path, f"{this_path}.encrypted"))
 
-    Storage(config["storage_provider"], log_level=log_level).upload(config["bucket"], encrypted_file_path)
+    storage = Storage(
+        storage_provider=config["storage_provider"],
+        log_level=log_level,
+        s3_endpoint_url=config['s3_endpoint_url'],
+        s3_access_key_id=config['s3_access_key_id'],
+        s3_secret_access_key=config['s3_secret_access_key']
+    )
+
+    storage.upload(config["bucket"], encrypted_file_path)
     logging.debug('Uploaded {} to {}'.format(f"{this_path}.encrypted", config["storage_provider"]))
 
     print(f"File {this_path} successfully uploaded")
@@ -181,9 +238,10 @@ def backup(ctx, cryptographer, key, storage_provider, bucket):
 @click.pass_context
 @click.option('--cryptographer', '-c', type=click.Choice(['gpg', 'python']), help='The encryption service to use')
 @click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--storage-provider', '-s', type=click.Choice(['s3']), help='Which storage backend was used to upload the database file')
+@click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='Which storage backend was used to upload the database file')
+@click.option('--s3-endpoint-url', '-e', help='Used for other S3 compatible providers — e.g. https://ams3.digitaloceanspaces.com')
 @click.option('--bucket', '-b', help='Which bucket the database file was uploaded to')
-def restore(ctx, cryptographer, key, storage_provider, bucket):
+def restore(ctx, cryptographer, key, storage_provider, s3_endpoint_url, bucket):
     """ Restore the database file from a backup in storage """
 
     # Override options retrieved from the config file, by those from the command line
@@ -191,6 +249,7 @@ def restore(ctx, cryptographer, key, storage_provider, bucket):
     helpers.merge_dicts(config, {
         "cryptographer": cryptographer,
         "storage_provider": storage_provider,
+        "s3_endpoint_url": s3_endpoint_url,
         "key": key,
         "bucket": bucket
     })
@@ -203,7 +262,14 @@ def restore(ctx, cryptographer, key, storage_provider, bucket):
     remote_filename = "filenames.sqlite.encrypted"
     temporary_file = f"{cstash_directory}/filenames.sqlite.encrypted"
 
-    storage = Storage(config['storage_provider'], log_level=log_level)
+    storage = Storage(
+        storage_provider=config["storage_provider"],
+        log_level=log_level,
+        s3_endpoint_url=config['s3_endpoint_url'],
+        s3_access_key_id=config['s3_access_key_id'],
+        s3_secret_access_key=config['s3_secret_access_key']
+    )
+
     storage.download(config['bucket'], remote_filename, temporary_file)
     logging.debug('Downloaded {} from {}'.format(remote_filename, storage_provider))
 

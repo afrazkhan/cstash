@@ -5,10 +5,17 @@ Class for operations with the S3 API
 import boto3
 import logging
 import cstash.libs.helpers as helpers
+import botocore.exceptions
+import sys
 
 class S3():
-    def __init__(self, log_level=None): # pylint: disable=unused-argument
-        self.s3_client = boto3.client('s3')
+    def __init__(self, s3_access_key_id, s3_secret_access_key, s3_endpoint_url="https://s3.amazonaws.com", log_level=None): # pylint: disable=unused-argument
+        self.s3_client = boto3.client(
+            service_name='s3',
+            endpoint_url=s3_endpoint_url,
+            aws_access_key_id=s3_access_key_id,
+            aws_secret_access_key=s3_secret_access_key
+        )
 
     def search(self, bucket=None, filename=None, s3_client=None):
         """
@@ -20,15 +27,19 @@ class S3():
 
         s3_client = s3_client or self.s3_client
 
-        if bucket is None:
-            print("Returning listing of buckets, since you didn't supply a bucket (see --help)\n")
-            return self.list_buckets()
+        try:
+            if bucket is None:
+                print("Returning listing of buckets, since you didn't supply a bucket (see --help)\n")
+                return self.list_buckets()
 
-        if filename is None:
-            print("Returning a listing of the bucket {} only, since you did not supply an object to search for (see --help)\n".format(bucket))
-            return self.get_objects(bucket, s3_client)
+            if filename is None:
+                print("Returning a listing of the bucket {} only, since you did not supply an object to search for (see --help)\n".format(bucket))
+                return self.get_objects(bucket, s3_client)
 
-        all_objects = self.get_objects(bucket, s3_client)
+            all_objects = self.get_objects(bucket, s3_client)
+        except botocore.exceptions.EndpointConnectionError:
+            logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
+            sys.exit(1)
 
         return [ s for s in all_objects if filename in s ]
 
@@ -37,7 +48,11 @@ class S3():
 
         s3_client = s3_client or self.s3_client
 
-        return ([ bucket['Name'] for bucket in s3_client.list_buckets()['Buckets'] ])
+        try:
+            return ([ bucket['Name'] for bucket in s3_client.list_buckets()['Buckets'] ])
+        except botocore.exceptions.EndpointConnectionError:
+            logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
+            sys.exit(1)
 
     def bucket_exists(self, bucket, s3_client=None):
         """ Return True if [bucket] exists, False if it doesn't """
@@ -47,6 +62,9 @@ class S3():
         try:
             s3_client.list_objects(Bucket=bucket, MaxKeys=1)
             return True
+        except botocore.exceptions.EndpointConnectionError:
+            logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
+            return False
         except Exception as e:
             logging.error("Couldn't find bucket. Check access rights and whether the bucket actually exists: {}".format(e))
             return False
@@ -54,7 +72,12 @@ class S3():
     def get_objects(self, bucket, s3_client=None):
         """ Take [bucket] and [s3_client], and return a list of all objects from [bucket] """
 
-        all_objects = s3_client.list_objects_v2(Bucket=bucket)
+        try:
+            all_objects = s3_client.list_objects_v2(Bucket=bucket)
+        except botocore.exceptions.EndpointConnectionError:
+            logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
+            sys.exit(1)
+
         if 'Contents' in all_objects.keys():
             all_objects = [ k['Key'] for k in [ obj for obj in all_objects['Contents'] ]] # pylint: disable=unnecessary-comprehension
         else:
@@ -74,7 +97,9 @@ class S3():
             s3_transfer.upload_file(obj, bucket, helpers.strip_path(obj)[1])
 
             return True
-
+        except botocore.exceptions.EndpointConnectionError:
+            logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
+            return False
         except Exception as e:
             logging.error("Error uploading: {}".format(e))
             return False
@@ -93,9 +118,10 @@ class S3():
         try:
             logging.debug("Downloading {} to {}".format(obj, destination))
             s3_transfer.download_file(bucket, obj, destination)
-
             return destination
-
+        except botocore.exceptions.EndpointConnectionError:
+            logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
+            return False
         except Exception as e:
             logging.error("Error downloading {}: {}".format(obj, e))
             return False

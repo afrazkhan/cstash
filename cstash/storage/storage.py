@@ -9,14 +9,19 @@ import cstash.libs.helpers as helpers
 import os
 
 class Storage():
-    def __init__(self, storage_provider, log_level="ERROR"):
+    def __init__(self, storage_provider, s3_access_key_id, s3_secret_access_key, log_level="ERROR", s3_endpoint_url=None):
         if storage_provider == 's3':
             from cstash.storage.s3 import S3
-            self.storage_provider = S3(log_level)
+            self.storage_provider = S3(
+                s3_endpoint_url=s3_endpoint_url,
+                log_level=log_level,
+                s3_access_key_id=s3_access_key_id,
+                s3_secret_access_key=s3_secret_access_key
+            )
 
     def search(self, bucket, filename, storage_provider=None):
         """
-        Search [bucket] with [storage_provider] for [filename.
+        Search [bucket] with [storage_provider] for [filename]
 
         * If [bucket] is None, then only return a listing of all buckets
         * If [filename] is not None, then return matching objects, otherwise return all objects

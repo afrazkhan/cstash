@@ -21,9 +21,10 @@ def create_cstash_directory():
     return cstash_dir
 
 @click.group()
+@click.option("--profile", '-p', default='default', help='The configuration profile to use')
 @click.option("--log-level", '-l', default="ERROR", type=click.Choice(["INFO", "ERROR", "DEBUG"], case_sensitive=False), help="How much information to show in logging. Default is ERROR")
 @click.pass_context
-def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory(),):
+def main(ctx=None, profile='default', log_level="ERROR", cstash_directory=create_cstash_directory(),):
     """
     Stash and fetch encrypted versions of your files to your choice of storage providers
     \f
@@ -40,9 +41,14 @@ def main(ctx=None, log_level="ERROR", cstash_directory=create_cstash_directory()
     logger.addHandler(console_handler)
 
     cstash_directory = create_cstash_directory()
-    config = Config(cstash_directory).read()
+    config = Config(cstash_directory).read(section=profile)
 
-    ctx.obj = {'log_level': log_level.upper(), 'cstash_directory': cstash_directory, 'config': config}
+    ctx.obj = {
+        'profile': profile,
+        'log_level': log_level.upper(),
+        'cstash_directory': cstash_directory,
+        'config': config
+    }
 
 @main.command()
 @click.pass_context

@@ -32,6 +32,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
         self.two_directory_tieres_file_path = f"{self.two_directory_tieres}/{self.single_file}"
         self.single_directory_file_path = f"{self.test_files_directory}/{self.single_file}"
         self.storage_provider = "s3"
+        self.dummy_endpoint_url = "https://s3.amazonaws.com"
 
     def setUp(self):
         """ Create test database with two entries from two test files """
@@ -150,6 +151,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
             cryptographer=self.dummy_cryptographer,
             key=self.dummy_key,
             storage_provider=self.storage_provider,
+            s3_endpoint_url=self.dummy_endpoint_url,
             bucket=self.dummy_bucket_name
         )
 
@@ -171,6 +173,7 @@ class TestFilenameDatabaseOperations(unittest.TestCase):
             cryptographer=self.dummy_cryptographer,
             key=self.dummy_key,
             storage_provider=self.storage_provider,
+            s3_endpoint_url=self.dummy_endpoint_url,
             bucket=self.dummy_bucket_name
         )
 
