@@ -38,19 +38,25 @@ class TestIntegrations(unittest.TestCase):
                 "s3",
                 self.test_bucket_name,
                 self.single_directory_file_path,
-                f"{self.test_files_directory}/{self.single_file}"
+                f"{self.test_files_directory}/{self.single_file}",
+                "foo",
+                "bar"
                 ),
             "s3_existing_bucket_directory_destination": (
                 "s3",
                 self.test_bucket_name,
                 self.single_directory_file_path,
-                f"{self.test_files_directory}"
+                f"{self.test_files_directory}",
+                "foo",
+                "bar"
                 ),
             "s3_existing_bucket_no_destination": (
                 "s3",
                 self.test_bucket_name,
                 self.single_directory_file_path,
-                None
+                None,
+                "foo",
+                "bar"
                 )
         }
 
@@ -120,11 +126,11 @@ class TestIntegrations(unittest.TestCase):
         and some permutations of arguments to storage.download()
         """
 
-        for name, (storage_provider, bucket, test_file, destination) in self.storage_cases.items():
+        for name, (storage_provider, bucket, test_file, destination, s3_access_key_id, s3_secret_access_key) in self.storage_cases.items():
             with self.subTest(name=name):
                 from cstash.storage.storage import Storage
-                Storage(storage_provider).upload(bucket, test_file)
-                retrieved_file = Storage(storage_provider).download(bucket, self.single_file, destination)
+                Storage(storage_provider, s3_access_key_id, s3_secret_access_key).upload(bucket, test_file)
+                retrieved_file = Storage(storage_provider, s3_access_key_id, s3_secret_access_key).download(bucket, self.single_file, destination)
 
                 retrieved_file_contents = open(retrieved_file, "r").read()
                 self.assertEqual(self.file_contents, retrieved_file_contents)

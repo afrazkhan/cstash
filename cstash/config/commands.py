@@ -11,12 +11,12 @@ def config():
 
 @config.command()
 @click.pass_context
-@click.option('--cryptographer', '-c', default='python', type=click.Choice(['gpg', 'python']), help='The encryption service to use. Currently only the deault option of GnuPG is supported.')
+@click.option('--cryptographer', '-c', default='python', type=click.Choice(['gpg', 'python']), help='The encryption service to use. Defaults to python')
 @click.option('--storage-provider', '-s', default='s3', type=click.Choice(['s3']), help='The object storage provider to use. Currently only the default option of S3 is supported.')
-@click.option('--s3-endpoint-url', '-e', help='Used for other S3 compatible providers — e.g. https://ams3.digitaloceanspaces.com')
+@click.option('--s3-endpoint-url', '-e', default='https://s3.amazonaws.com', help='Used for other S3 compatible providers — e.g. https://ams3.digitaloceanspaces.com, defaults to https://s3.amazonaws.com')
 @click.option('--ask-for-s3-credentials', '-a', is_flag=True, help="Prompt for access key ID and secret to be used with S3 compatible provider")
-@click.option('--key', '-k', help='Key to use for encryption. For GPG, this is the key ID')
-@click.option('--bucket', '-b', help='Override the known bucket for objects to be fetched')
+@click.option('--key', '-k', default='default', help='Key to use for encryption. For GPG, this is the key ID, for Python native encryption, this is the name of the file in the $HOME/.cstash/keys directory')
+@click.option('--bucket', '-b', help='Bucket name where objects will be stored')
 def write(ctx, cryptographer, storage_provider, s3_endpoint_url, ask_for_s3_credentials, key, bucket):
     """
     Set one or more of the options in the config file for [section]. If [section] is not

@@ -66,7 +66,7 @@ class TestHelperOperations(unittest.TestCase):
         """
 
         result = helpers.get_paths(self.test_files_directory)
-        expected = [self.single_directory_file_path, self.two_directory_tieres_file_path]
+        expected = [self.two_directory_tieres_file_path, self.single_directory_file_path]
 
         self.assertEqual(result, expected, msg="helpers.get_paths() failed to return " \
             "expected result when tested with a directory")
