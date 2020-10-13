@@ -10,13 +10,13 @@ When using [server side encryption](https://docs.aws.amazon.com/AmazonS3/latest/
 
 This leaves data in S3 vulnerable to both malicious intent, and potential incompitance.
 
-Cstash encrypts files using local keys before uploading them to cloud storage. Filenames are also obfuscated using sha256, with a local database holding a map to the real filename (recovery is possible from an encrypted version stored along with the objects).
+Cstash encrypts files using local keys before uploading them to cloud storage. Filenames are also obfuscated using SHA-256, with a local database holding a map to the real filename (recovery is possible from an encrypted version stored along with the objects).
 
 ## Features
 
 * Local encryption / decryption — keys never leave your machine
 * Filenames are one way hashed using sha256, with only the local DB and an encrypted copy in remote storage as a means of finding out which object is which file
-* Able to keep arbitrary files on your machine in sync with remote storage
+* Able to keep arbitrary files on your machine in sync with remote storage — experimental
 * Multiple encryption options and cloud providers supported
 
 ## Instalation
@@ -30,7 +30,7 @@ The quickest way to get up and running is to initialise a new key and config wit
     cstash initialise
     cstash config write --bucket [BUCKET_NAME] --ask-for-s3-credentials
 
-This will start you up with a configuration that uses a newly generated key at `$HOME/.cstash/keys/default`, the bucket specified. See `cstash config write --help` for overriding default values, for example to use an available GPG key instead.
+This will set you up with a configuration that uses a newly generated key stored at `$HOME/.cstash/keys/default` for encryption, and the bucket specified for storage, using AWS by default. See `cstash config write --help` for overriding default values, for example to use an available GPG key instead, or a different S3 compatible storage provider by specifing `--s3-endpoint-url`.
 
 The CLI is fairly well documented with `--help`, but these are the basic examples for the lazy:
 

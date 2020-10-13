@@ -16,10 +16,9 @@ setuptools.setup(
     url="https://github.com/afrazkhan/cstash",
     packages=["cstash"],
     install_requires=[
-        "click",
+        "click >= 7.0",
         "boto3",
         'datetime',
-        'click',
         'sqlitedict',
         'python-gnupg',
         'daemon',
