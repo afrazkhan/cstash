@@ -36,7 +36,7 @@ The CLI is fairly well documented with `--help`, but these are the basic example
 
 ```sh
 # Write configuration to use [GPG KEY ID] and [S3 BUCKET NAME]
-cstash config -c gpg -s s3 -k [GPG KEY ID] -b [S3 BUCKET NAME]
+cstash config write -c gpg -s s3 -k [GPG KEY ID] -b [S3 BUCKET NAME]
 
 # Encrypt a file to GPG and stash it away in S3. Note that you can override the values in your config by passing the options here again, allowing mixing and matching cryptographers, remote storage providers, keys, and buckets (--cryptographer, --storage-provider, --key, --bucket)
 cstash stash [FILE TO STASH]

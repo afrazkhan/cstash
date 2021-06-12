@@ -53,6 +53,9 @@ class S3():
         except botocore.exceptions.EndpointConnectionError:
             logging.error("Couldn't connect to an S3 endpoint. If you're using an S3 compatible provider other than AWS, remember to set --s3-endpoint-url")
             sys.exit(1)
+        except botocore.exceptions.ClientError as e:
+            print(e)
+            sys.exit(1)
 
     def bucket_exists(self, bucket, s3_client=None):
         """ Return True if [bucket] exists, False if it doesn't """
