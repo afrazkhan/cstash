@@ -64,3 +64,4 @@ A lazy man's ticket list:
 * Implement Google Cloud storage
 * Implement Digital Ocean storage
 * Add `cstash fetch [filename] --destination` to override original the file path
+* Keys are asymetrical at the moment, so syncing between machines will not work (without sharing the keys manually). Figure out secure way to create deterministic keys that can be recreated on other machines

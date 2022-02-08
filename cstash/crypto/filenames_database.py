@@ -58,8 +58,8 @@ class FilenamesDatabase():
             keys = [(k, db_connection[k]) for k in db_connection.keys() if obj in k]
 
         if exact is True and len(keys) > 1:
-            raise exceptions.CstashCriticalException(message=(f"Found more than a single match "
-                "for {obj} in the database:\n\n{keys}")) # pylint: disable=bad-continuation
+            raise exceptions.CstashCriticalException(message=("Found more than a single match "
+                "for {obj} in the database:\n\n{keys}"))
 
         db_connection.close()
 
@@ -77,7 +77,7 @@ class FilenamesDatabase():
                     sha256.update(block)
             return sha256.hexdigest()
         except FileNotFoundError as e:
-            logging.error(f"Couldn't hash the file {filepath}: {e}")
+            logging.error(f"Couldn't hash the file {filepath}: {e}") # pylint: disable=logging-fstring-interpolation
             return False
 
     def filename_hash(self, filepath):

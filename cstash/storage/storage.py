@@ -6,6 +6,8 @@ choose from
 import logging
 import cstash.libs.exceptions as exceptions
 import cstash.libs.helpers as helpers
+import botocore.exceptions
+import sys
 import os
 
 class Storage():
@@ -28,7 +30,12 @@ class Storage():
         """
 
         storage_provider = storage_provider or self.storage_provider
-        return self.storage_provider.search(bucket, filename)
+        logging.debug(storage_provider)
+        try:
+            return self.storage_provider.search(bucket, filename)
+        except botocore.exceptions.ClientError as e:
+            logging.error(f"Couldn't connect to S3, check credentials for {storage_provider['s3_endpoint_url']}: {e}") # pylint: disable=logging-fstring-interpolation
+            sys.exit(1)
 
     def upload(self, bucket, filename, storage_provider=None):
         """

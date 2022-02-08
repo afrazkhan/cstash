@@ -19,8 +19,9 @@ def config():
 @click.option('--bucket', '-b', help='Bucket name where objects will be stored')
 def write(ctx, cryptographer, storage_provider, s3_endpoint_url, ask_for_s3_credentials, key, bucket):
     """
-    Set one or more of the options in the config file for [section]. If [section] is not
-    given, default to "default". The config file will be created if necessary
+    Set one or more of the options in the config file for a profile, given by the root
+    option --profile. If --profile is not given, "default" is used. The config file
+    will be created if necessary
     """
 
     from cstash.config.config import Config

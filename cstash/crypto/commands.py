@@ -174,7 +174,7 @@ def search(ctx, filename):
     if len(results) == 0:
         print("No results found")
     for r in results:
-        print("Partial or full match: {}".format(r[0]))
+        print(f"Partial or full match: {r[0]}\nFound in: {r[1]['s3_endpoint_url']}, s3://{r[1]['bucket']}\n")
 
 @database.command()
 @click.pass_context
